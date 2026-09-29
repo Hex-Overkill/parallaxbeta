@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Chatrooms — LoP Gaming Hub{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="page-head">
+    <h1 class="page-title">💬 Chatrooms</h1>
+    <p class="page-sub">Talk trash, team up and make friends in the multiplayer game lounges.</p>
+  </div>
+  <div class="room-grid">
+    {% for item in rooms %}
+      <a class="room-card" href="{{ url_for('chat.room', room_id=item.room.id) }}">
+        <div class="room-card-head">
+          <h3 class="room-name">{{ item.room.name }}</h3>
+          {% if item.online_count %}
+            <span class="online-chip">{{ item.online_count }} online</span>
+          {% else %}
+            <span class="online-chip muted">0 online</span>
+          {% endif %}
+        </div>
+        <p class="room-meta">
+          {% if item.game %}
+            Linked game: <strong>{{ item.game.title }}</strong>
+            {% if item.game.is_premium %}<span class="badge badge-premium">PREMIUM</span>{% endif %}
+          {% else %}
+            Global lobby — talk about anything.
+          {% endif %}
+        </p>
+        <div class="room-foot">
+          <span>{{ item.message_count }} messages</span>
+          {% if item.last %}
+            <span class="room-last"><strong>{{ item.last.user.username if item.last.user else 'deleted' }}:</strong> {{ item.last.content[:60] }}</span>
+          {% else %}
+            <span class="room-last muted">No messages yet — say hi!</span>
+          {% endif %}
+        </div>
+      </a>
+    {% else %}
+      <p class="empty-state">No chatrooms available yet. Check back soon!</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

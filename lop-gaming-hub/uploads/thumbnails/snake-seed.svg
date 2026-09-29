@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="320" viewBox="0 0 512 320">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#22c55e"/><stop offset="1" stop-color="#0d2b18"/>
+  </linearGradient></defs>
+  <rect width="512" height="320" rx="18" fill="url(#g)"/>
+  <rect x="8" y="8" width="496" height="304" rx="14" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="2"/>
+  <rect x="16" y="16" width="480" height="288" rx="12" fill="rgba(10,14,23,.55)"/>
+  <text x="256" y="176" font-family="Verdana, sans-serif" font-size="34" font-weight="bold" fill="#ffffff" text-anchor="middle">SNAKE</text>
+  <text x="256" y="212" font-family="Verdana, sans-serif" font-size="18" fill="rgba(232,238,251,.75)" text-anchor="middle">LoP Gaming Hub</text>
+</svg>

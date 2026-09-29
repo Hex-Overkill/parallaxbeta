@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>LoP Soft — Neon Protocol | Level 1</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="boot" class="screen">
+  <div class="logo">LoP<span>SOFT</span></div>
+  <div class="bootline">NEON PROTOCOL // LEVEL 01</div>
+  <div class="bootbar"><i></i></div>
+</div>
+
+<div id="mainMenu" class="screen hidden">
+  <div class="brand">NEON <b>PROTOCOL</b></div>
+  <div class="tag">THE LAST SIGNAL</div>
+  <button id="start" class="big">START MISSION</button>
+  <p class="hint">LEVEL 01 • THE LAST SIGNAL</p>
+</div>
+
+<div id="story" class="screen hidden">
+  <div class="storybox">
+    <div class="kicker">LEVEL 01 // THE LAST SIGNAL</div>
+    <h1>THE LAST SIGNAL</h1>
+    <p>Three nights ago, your younger sister disappeared.</p>
+    <p>Tonight, an emergency transmission cuts through the dead city's static. It contains her voice — broken, frightened, but unmistakably hers.</p>
+    <p>You are her older brother. You follow the signal into an abandoned neon district.</p>
+    <div class="objective">OBJECTIVE — REACH THE SIGNAL TOWER AND RECOVER THE TRANSMISSION.</div>
+    <button id="enter" class="big">ENTER LEVEL</button>
+  </div>
+</div>
+
+<canvas id="game" class="hidden"></canvas>
+
+<div id="hud" class="hidden">
+  <div class="top">
+    <span>LEVEL <b>01</b></span><span>HP <b id="hp">100</b></span><span>$ <b id="cash">0</b></span><span id="weapon">PULSE PISTOL</span>
+  </div>
+  <div class="hp"><i id="hpFill"></i></div>
+  <div id="mission"></div>
+  <div id="prompt"></div>
+</div>
+
+<div id="complete" class="screen hidden">
+  <div class="storybox">
+    <div class="kicker">TRANSMISSION RECOVERED</div>
+    <h1>SHE'S ALIVE.</h1>
+    <p>The recording ends with coordinates buried beneath the static.</p>
+    <p class="quote">“If you can hear me... please don't stop looking.”</p>
+    <div class="objective">LEVEL 01 COMPLETE</div>
+    <button id="returnMenu" class="big">EXIT TO MENU</button>
+    <p class="hint">ESC — EXIT LEVEL</p>
+  </div>
+</div>
+
+<div id="dead" class="screen hidden">
+  <div class="storybox">
+    <div class="kicker">SIGNAL LOST</div>
+    <h1>MISSION FAILED</h1>
+    <p>The district swallowed the signal.</p>
+    <button id="retry" class="big">RETRY LEVEL</button>
+    <button id="deadMenu" class="big">MAIN MENU</button>
+  </div>
+</div>
+
+<div id="touch" class="hidden">
+  <button data-key="left">◀</button><button data-key="jump">▲</button><button data-key="right">▶</button>
+  <button data-key="fire">FIRE</button><button data-key="use">E</button>
+</div>
+
+<script src="js/weapons.js"></script>
+<script src="levels/level01.js"></script>
+<script src="js/level1.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

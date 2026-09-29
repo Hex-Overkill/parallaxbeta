@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}404 — Not Found{% endblock %}
+{% block content %}
+<div class="container error-page">
+  <div class="error-code">404</div>
+  <h1>Game over</h1>
+  <p>This page has left the lobby. The link may be wrong, or the game may have been removed.</p>
+  <a class="btn btn-primary" href="{{ url_for('games.library') }}">Browse the library</a>
+</div>
+{% endblock %}

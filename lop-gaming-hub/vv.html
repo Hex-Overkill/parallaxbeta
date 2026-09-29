@@ -1,0 +1,3161 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LoP Soft — Neon Protocol</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #03040b;
+    font-family: Arial, Helvetica, sans-serif;
+    color: white;
+}
+
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#game-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 1200px;
+    height: 100vh;
+    background: #050612;
+    overflow: hidden;
+}
+
+canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+}
+
+/* ============================================================
+   BOOT
+============================================================ */
+
+#boot-screen,
+#main-menu,
+#game-over {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+}
+
+#boot-screen {
+    background:
+        radial-gradient(circle at center, #111a31 0%, #03040b 55%, #000 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.boot-logo {
+    font-size: clamp(45px, 9vw, 100px);
+    font-weight: 900;
+    letter-spacing: 12px;
+    color: #eaffff;
+    text-shadow:
+        0 0 10px #00f6ff,
+        0 0 30px #00f6ff,
+        0 0 60px #006cff;
+    animation: logoPulse 1.6s infinite alternate;
+}
+
+.boot-logo span {
+    color: #00f6ff;
+}
+
+.boot-subtitle {
+    margin-top: 12px;
+    letter-spacing: 6px;
+    color: #657a99;
+    font-size: 12px;
+}
+
+.boot-progress {
+    width: min(420px, 70%);
+    height: 5px;
+    margin-top: 40px;
+    background: #111827;
+    overflow: hidden;
+}
+
+#boot-progress-bar {
+    width: 0%;
+    height: 100%;
+    background: #00f6ff;
+    box-shadow: 0 0 20px #00f6ff;
+}
+
+#boot-status {
+    margin-top: 15px;
+    color: #50637e;
+    font-size: 11px;
+    letter-spacing: 2px;
+}
+
+@keyframes logoPulse {
+    from {
+        opacity: .7;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* ============================================================
+   MENU
+============================================================ */
+
+#main-menu,
+#game-over {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background:
+        linear-gradient(rgba(3,4,11,.65), rgba(3,4,11,.92)),
+        radial-gradient(circle at center, #151738, #020308);
+}
+
+.menu-panel {
+    width: min(550px, 90%);
+    padding: 40px;
+    text-align: center;
+    border: 1px solid rgba(0,246,255,.35);
+    background: rgba(3,7,18,.86);
+    box-shadow:
+        0 0 50px rgba(0,246,255,.08),
+        inset 0 0 30px rgba(0,246,255,.03);
+}
+
+.menu-small {
+    color: #ff36d9;
+    letter-spacing: 5px;
+    font-size: 11px;
+}
+
+.menu-title {
+    margin: 10px 0;
+    font-size: clamp(35px, 7vw, 65px);
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: white;
+    text-shadow:
+        3px 0 #ff36d9,
+        -3px 0 #00f6ff;
+}
+
+.menu-description {
+    color: #7d8ca5;
+    line-height: 1.6;
+    font-size: 14px;
+}
+
+.menu-features {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 25px 0;
+}
+
+.feature {
+    padding: 12px;
+    background: rgba(255,255,255,.035);
+    border: 1px solid rgba(255,255,255,.06);
+    color: #a7b4ca;
+    font-size: 12px;
+}
+
+button {
+    border: 0;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.menu-button {
+    width: 100%;
+    min-height: 52px;
+    background: #00eaff;
+    color: #02050b;
+    font-size: 15px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    transition: .2s;
+}
+
+.menu-button:hover {
+    background: #fff;
+    box-shadow:
+        0 0 20px #00eaff,
+        0 0 50px rgba(0,234,255,.4);
+}
+
+/* ============================================================
+   HUD
+============================================================ */
+
+#hud {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.hud-top {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    right: 15px;
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.hud-box {
+    padding: 10px 14px;
+    min-width: 150px;
+    background: rgba(2,5,14,.78);
+    border: 1px solid rgba(0,246,255,.2);
+    backdrop-filter: blur(5px);
+}
+
+.hud-label {
+    color: #596a83;
+    font-size: 9px;
+    letter-spacing: 2px;
+}
+
+.hud-value {
+    margin-top: 4px;
+    font-weight: bold;
+    color: #e9ffff;
+    font-size: 14px;
+}
+
+#health-bar {
+    width: 140px;
+    height: 7px;
+    margin-top: 6px;
+    background: #271323;
+}
+
+#health-fill {
+    width: 100%;
+    height: 100%;
+    background: #ff3f78;
+    box-shadow: 0 0 10px #ff3f78;
+    transition: width .15s;
+}
+
+#regen-text {
+    color: #64ffb5;
+    font-size: 9px;
+    margin-top: 5px;
+}
+
+#status-message {
+    position: absolute;
+    bottom: 75px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 8px 16px;
+    color: #a9ffff;
+    background: rgba(0,0,0,.65);
+    border: 1px solid rgba(0,246,255,.15);
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+/* ============================================================
+   CONTROLS
+============================================================ */
+
+#mobile-controls {
+    position: absolute;
+    bottom: 15px;
+    left: 15px;
+    right: 15px;
+    display: none;
+    justify-content: space-between;
+    pointer-events: auto;
+}
+
+.control-group {
+    display: flex;
+    gap: 8px;
+}
+
+.control-button {
+    width: 55px;
+    height: 55px;
+    border: 1px solid rgba(0,246,255,.4);
+    background: rgba(0,0,0,.6);
+    color: #00f6ff;
+    font-weight: bold;
+    touch-action: none;
+}
+
+/* ============================================================
+   GAME OVER
+============================================================ */
+
+.game-over-title {
+    color: #ff3f78;
+    font-size: 40px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    text-shadow: 0 0 20px #ff3f78;
+}
+
+@media (max-width: 800px) {
+
+    #mobile-controls {
+        display: flex;
+    }
+
+    .hud-box {
+        min-width: 110px;
+    }
+
+    .hud-top {
+        flex-wrap: wrap;
+    }
+
+    #status-message {
+        bottom: 90px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div id="game-wrapper">
+
+<canvas id="gameCanvas" width="1200" height="700"></canvas>
+
+<!-- ============================================================
+     BOOT
+============================================================ -->
+
+<div id="boot-screen">
+
+    <div class="boot-logo">
+        LoP <span>soft</span>
+    </div>
+
+    <div class="boot-subtitle">
+        FUTURE SYSTEMS DIVISION
+    </div>
+
+    <div class="boot-progress">
+        <div id="boot-progress-bar"></div>
+    </div>
+
+    <div id="boot-status">
+        INITIALIZING...
+    </div>
+
+</div>
+
+<!-- ============================================================
+     MENU
+============================================================ -->
+
+<div id="main-menu">
+
+    <div class="menu-panel">
+
+        <div class="menu-small">
+            LoP SOFT PRESENTS
+        </div>
+
+        <div class="menu-title">
+            NEON<br>PROTOCOL
+        </div>
+
+        <div class="menu-description">
+            Enter the ruined megacity of Sector-09.
+            Scavenge weapons, collect medical supplies,
+            eliminate hostile units and survive the changing
+            cycle between neon night and artificial daylight.
+        </div>
+
+        <div class="menu-features">
+
+            <div class="feature">
+                ⚡ DYNAMIC DAY / NIGHT
+            </div>
+
+            <div class="feature">
+                🔫 WEAPON SCAVENGING
+            </div>
+
+            <div class="feature">
+                ✚ MEDICAL SUPPLIES
+            </div>
+
+            <div class="feature">
+                ♥ COMBAT REGENERATION
+            </div>
+
+        </div>
+
+        <button id="start-button" class="menu-button">
+            START MISSION
+        </button>
+
+        <div style="margin-top:15px;color:#53647c;font-size:10px;">
+            A / D — MOVE &nbsp;&nbsp;
+            SPACE — JUMP &nbsp;&nbsp;
+            F — FIRE &nbsp;&nbsp;
+            H — MEDKIT
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ============================================================
+     GAME OVER
+============================================================ -->
+
+<div id="game-over">
+
+    <div class="menu-panel">
+
+        <div class="game-over-title">
+            SIGNAL LOST
+        </div>
+
+        <p id="final-score">
+            SCORE: 0
+        </p>
+
+        <button id="restart-button" class="menu-button">
+            RESTART MISSION
+        </button>
+
+    </div>
+
+</div>
+
+<!-- ============================================================
+     HUD
+============================================================ -->
+
+<div id="hud">
+
+    <div class="hud-top">
+
+        <div class="hud-box">
+
+            <div class="hud-label">
+                VITAL SYSTEM
+            </div>
+
+            <div class="hud-value">
+                <span id="health-text">100</span> / 100
+            </div>
+
+            <div id="health-bar">
+                <div id="health-fill"></div>
+            </div>
+
+            <div id="regen-text">
+                REGEN READY
+            </div>
+
+        </div>
+
+        <div class="hud-box">
+
+            <div class="hud-label">
+                WEAPON
+            </div>
+
+            <div id="weapon-text" class="hud-value">
+                PULSE PISTOL
+            </div>
+
+        </div>
+
+        <div class="hud-box">
+
+            <div class="hud-label">
+                MEDKITS
+            </div>
+
+            <div id="medkit-text" class="hud-value">
+                0
+            </div>
+
+        </div>
+
+        <div class="hud-box">
+
+            <div class="hud-label">
+                ENVIRONMENT
+            </div>
+
+            <div id="cycle-text" class="hud-value">
+                NIGHT
+            </div>
+
+        </div>
+
+        <div class="hud-box">
+
+            <div class="hud-label">
+                SCORE
+            </div>
+
+            <div id="score-text" class="hud-value">
+                0
+            </div>
+
+        </div>
+
+    </div>
+
+    <div id="status-message">
+        Booting LoP Soft...
+    </div>
+
+</div>
+
+<!-- ============================================================
+     MOBILE
+============================================================ -->
+
+<div id="mobile-controls">
+
+    <div class="control-group">
+
+        <button id="left-button" class="control-button">
+            ◀
+        </button>
+
+        <button id="right-button" class="control-button">
+            ▶
+        </button>
+
+    </div>
+
+    <div class="control-group">
+
+        <button id="jump-button" class="control-button">
+            ▲
+        </button>
+
+        <button id="fire-button" class="control-button">
+            FIRE
+        </button>
+
+        <button id="heal-button" class="control-button">
+            +
+        </button>
+
+    </div>
+
+</div>
+
+</div>
+
+<script>
+
+/* ============================================================
+   LoP Soft — Neon Protocol
+   FULL COMBAT UPDATE
+============================================================ */
+
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+const W = canvas.width;
+const H = canvas.height;
+
+const WORLD_WIDTH = 6000;
+
+let gameRunning = false;
+let animationId = null;
+let lastTime = 0;
+
+let score = 0;
+let cameraX = 0;
+let worldTime = 0;
+
+const keys = {};
+
+/* ============================================================
+   EFFECTS
+============================================================ */
+
+let damageNumbers = [];
+let particles = [];
+
+/* ============================================================
+   PLAYER
+============================================================ */
+
+const player = {
+
+    x: 150,
+    y: 400,
+
+    width: 34,
+    height: 58,
+
+    vx: 0,
+    vy: 0,
+
+    speed: 0.8,
+    maxSpeed: 6,
+
+    jumpPower: 15,
+
+    grounded: false,
+
+    direction: 1,
+
+    maxHealth: 100,
+    health: 100,
+
+    weapon: "Pulse Pistol",
+
+    damage: 10,
+    fireRate: 220,
+
+    lastShot: 0,
+
+    medkits: 0,
+
+    lastDamageTime: 0,
+
+    lastHitTime: 0,
+
+    hitCooldown: 350,
+
+    regenerationDelay: 60000
+
+};
+
+/* ============================================================
+   WEAPONS
+============================================================ */
+
+const weapons = [
+
+    {
+        x: 760,
+        y: 330,
+        name: "Neon SMG",
+        damage: 13,
+        fireRate: 120,
+        color: "#00f6ff",
+        collected: false
+    },
+
+    {
+        x: 2100,
+        y: 310,
+        name: "Rail Blaster",
+        damage: 30,
+        fireRate: 380,
+        color: "#ff36d9",
+        collected: false
+    },
+
+    {
+        x: 3450,
+        y: 340,
+        name: "Plasma Carbine",
+        damage: 20,
+        fireRate: 190,
+        color: "#d5ff4f",
+        collected: false
+    },
+
+    {
+        x: 4850,
+        y: 330,
+        name: "Quantum Cannon",
+        damage: 45,
+        fireRate: 500,
+        color: "#a875ff",
+        collected: false
+    }
+
+];
+
+/* ============================================================
+   HEALTH
+============================================================ */
+
+const healthPickups = [
+
+    {x:1100,y:350,collected:false},
+    {x:1700,y:350,collected:false},
+    {x:2800,y:300,collected:false},
+    {x:3900,y:350,collected:false},
+    {x:5150,y:350,collected:false}
+
+];
+
+/* ============================================================
+   PLATFORMS
+============================================================ */
+
+const platforms = [
+
+    {x:0,y:620,w:900,h:80},
+    {x:1000,y:600,w:800,h:100},
+    {x:1900,y:620,w:850,h:80},
+    {x:2850,y:590,w:850,h:110},
+    {x:3800,y:620,w:850,h:80},
+    {x:4750,y:600,w:1250,h:100},
+
+    {x:300,y:500,w:220,h:20},
+    {x:650,y:420,w:200,h:20},
+
+    {x:1100,y:470,w:230,h:20},
+    {x:1450,y:390,w:220,h:20},
+
+    {x:2000,y:480,w:230,h:20},
+    {x:2350,y:390,w:250,h:20},
+
+    {x:3000,y:460,w:220,h:20},
+    {x:3350,y:370,w:230,h:20},
+
+    {x:3950,y:480,w:240,h:20},
+    {x:4300,y:390,w:220,h:20},
+
+    {x:4900,y:460,w:250,h:20},
+    {x:5350,y:370,w:250,h:20}
+
+];
+
+/* ============================================================
+   ENEMIES
+============================================================ */
+
+let enemies = [];
+
+function createEnemy(x, y) {
+
+    return {
+
+        x,
+        y,
+
+        width: 36,
+        height: 50,
+
+        vx: 0,
+        vy: 0,
+
+        health: 50,
+        maxHealth: 50,
+
+        direction:
+            Math.random() > .5 ? 1 : -1,
+
+        speed:
+            1 + Math.random() * .5,
+
+        alive: true,
+
+        grounded: false,
+
+        lastShot: 0,
+
+        shootCooldown:
+            1000 + Math.random() * 700,
+
+        hitFlash: 0,
+
+        hitStun: 0,
+
+        edgeCheckDistance: 8
+
+    };
+
+}
+
+function createEnemies() {
+
+    enemies = [
+
+        createEnemy(500, 560),
+        createEnemy(850, 360),
+        createEnemy(1200, 540),
+        createEnemy(1500, 330),
+        createEnemy(2050, 560),
+        createEnemy(2400, 330),
+        createEnemy(3100, 530),
+        createEnemy(3450, 310),
+        createEnemy(4000, 560),
+        createEnemy(4350, 330),
+        createEnemy(5000, 540),
+        createEnemy(5450, 310)
+
+    ];
+
+}
+
+/* ============================================================
+   PROJECTILES
+============================================================ */
+
+let bullets = [];
+
+/* ============================================================
+   RESET
+============================================================ */
+
+function resetGame() {
+
+    player.x = 150;
+    player.y = 400;
+
+    player.vx = 0;
+    player.vy = 0;
+
+    player.health = 100;
+
+    player.weapon = "Pulse Pistol";
+
+    player.damage = 10;
+
+    player.fireRate = 220;
+
+    player.medkits = 0;
+
+    player.lastDamageTime = 0;
+
+    player.lastHitTime = 0;
+
+    player.lastShot = 0;
+
+    score = 0;
+
+    cameraX = 0;
+
+    worldTime = 0;
+
+    bullets = [];
+
+    damageNumbers = [];
+
+    particles = [];
+
+    weapons.forEach(w => {
+        w.collected = false;
+    });
+
+    healthPickups.forEach(h => {
+        h.collected = false;
+    });
+
+    createEnemies();
+
+    updateHUD();
+
+}
+
+/* ============================================================
+   COLLISION
+============================================================ */
+
+function collision(a, b) {
+
+    return (
+
+        a.x < b.x + b.width &&
+
+        a.x + a.width > b.x &&
+
+        a.y < b.y + b.height &&
+
+        a.y + a.height > b.y
+
+    );
+
+}
+
+/* ============================================================
+   POINT / PLATFORM HELPERS
+============================================================ */
+
+function getPlatformBelow(entity) {
+
+    let best = null;
+
+    for (const p of platforms) {
+
+        const horizontal =
+            entity.x + entity.width > p.x &&
+            entity.x < p.x + p.w;
+
+        if (!horizontal) continue;
+
+        const feet =
+            entity.y + entity.height;
+
+        const platformTop =
+            p.y;
+
+        if (
+            feet <= platformTop + 18 &&
+            feet >= platformTop - 30
+        ) {
+
+            if (
+                !best ||
+                p.y < best.y
+            ) {
+
+                best = p;
+
+            }
+
+        }
+
+    }
+
+    return best;
+
+}
+
+function isGroundedOnPlatform(entity) {
+
+    for (const p of platforms) {
+
+        if (
+
+            entity.x + entity.width > p.x &&
+
+            entity.x < p.x + p.w &&
+
+            Math.abs(
+                entity.y + entity.height - p.y
+            ) < 5
+
+        ) {
+
+            return true;
+
+        }
+
+    }
+
+    return false;
+
+}
+
+/* ============================================================
+   JUMP
+============================================================ */
+
+function jump() {
+
+    if (!gameRunning) return;
+
+    if (player.grounded) {
+
+        player.vy =
+            -player.jumpPower;
+
+        player.grounded = false;
+
+    }
+
+}
+
+/* ============================================================
+   PARTICLES
+============================================================ */
+
+function createHitParticles(x, y, amount = 8) {
+
+    for (let i = 0; i < amount; i++) {
+
+        particles.push({
+
+            x,
+            y,
+
+            vx:
+                (Math.random() - .5) * 6,
+
+            vy:
+                (Math.random() - .5) * 6,
+
+            life: 25 + Math.random() * 20,
+
+            size:
+                2 + Math.random() * 3
+
+        });
+
+    }
+
+}
+
+function updateParticles(delta) {
+
+    for (const p of particles) {
+
+        p.x += p.vx;
+        p.y += p.vy;
+
+        p.vy += .12;
+
+        p.life -= delta * .06;
+
+    }
+
+    particles =
+        particles.filter(
+            p => p.life > 0
+        );
+
+}
+
+function drawParticles() {
+
+    for (const p of particles) {
+
+        ctx.save();
+
+        ctx.globalAlpha =
+            Math.min(1, p.life / 20);
+
+        ctx.fillStyle =
+            "#00f6ff";
+
+        ctx.shadowColor =
+            "#00f6ff";
+
+        ctx.shadowBlur = 10;
+
+        ctx.fillRect(
+            p.x,
+            p.y,
+            p.size,
+            p.size
+        );
+
+        ctx.restore();
+
+    }
+
+}
+
+/* ============================================================
+   DAMAGE NUMBERS
+============================================================ */
+
+function addDamageNumber(x, y, amount, enemy = true) {
+
+    damageNumbers.push({
+
+        x,
+        y,
+
+        amount,
+
+        enemy,
+
+        life: 900,
+
+        vy: -1.2
+
+    });
+
+}
+
+function updateDamageNumbers(delta) {
+
+    for (const d of damageNumbers) {
+
+        d.y += d.vy;
+
+        d.life -= delta;
+
+    }
+
+    damageNumbers =
+        damageNumbers.filter(
+            d => d.life > 0
+        );
+
+}
+
+function drawDamageNumbers() {
+
+    for (const d of damageNumbers) {
+
+        ctx.save();
+
+        ctx.globalAlpha =
+            Math.min(1, d.life / 300);
+
+        ctx.font =
+            "bold 15px Arial";
+
+        ctx.textAlign =
+            "center";
+
+        ctx.fillStyle =
+            d.enemy
+                ? "#ff6b9c"
+                : "#64ffb5";
+
+        ctx.shadowColor =
+            ctx.fillStyle;
+
+        ctx.shadowBlur = 8;
+
+        ctx.fillText(
+            "-" + d.amount,
+            d.x,
+            d.y
+        );
+
+        ctx.restore();
+
+    }
+
+}
+
+/* ============================================================
+   SHOOT
+============================================================ */
+
+function shoot() {
+
+    if (!gameRunning) return;
+
+    const now =
+        performance.now();
+
+    if (
+        now - player.lastShot <
+        player.fireRate
+    ) {
+
+        return;
+
+    }
+
+    player.lastShot = now;
+
+    const startX =
+        player.direction > 0
+            ? player.x + player.width + 4
+            : player.x - 4;
+
+    const startY =
+        player.y + 30;
+
+    bullets.push({
+
+        x: startX,
+
+        y: startY,
+
+        vx:
+            player.direction * 13,
+
+        vy: 0,
+
+        damage:
+            player.damage,
+
+        enemy: false,
+
+        life: 100
+
+    });
+
+    createHitParticles(
+        startX,
+        startY,
+        3
+    );
+
+}
+
+/* ============================================================
+   MEDKIT
+============================================================ */
+
+function useMedkit() {
+
+    if (
+        player.medkits > 0 &&
+        player.health < player.maxHealth
+    ) {
+
+        player.medkits--;
+
+        player.health += 40;
+
+        if (
+            player.health >
+            player.maxHealth
+        ) {
+
+            player.health =
+                player.maxHealth;
+
+        }
+
+        player.lastDamageTime =
+            performance.now();
+
+        showStatus(
+            "MEDKIT USED // +40 HP"
+        );
+
+        updateHUD();
+
+    }
+
+}
+
+/* ============================================================
+   PLAYER DAMAGE
+============================================================ */
+
+function damagePlayer(amount) {
+
+    if (!gameRunning) return;
+
+    const now =
+        performance.now();
+
+    if (
+        now - player.lastHitTime <
+        player.hitCooldown
+    ) {
+
+        return;
+
+    }
+
+    player.lastHitTime = now;
+
+    player.health -= amount;
+
+    player.lastDamageTime = now;
+
+    if (player.health < 0) {
+
+        player.health = 0;
+
+    }
+
+    addDamageNumber(
+        player.x + player.width / 2,
+        player.y - 8,
+        Math.ceil(amount),
+        false
+    );
+
+    createHitParticles(
+        player.x + player.width / 2,
+        player.y + player.height / 2,
+        10
+    );
+
+    showStatus(
+        "SYSTEM DAMAGE // -" +
+        Math.ceil(amount) +
+        " HP"
+    );
+
+    if (player.health <= 0) {
+
+        gameOver();
+
+    }
+
+}
+
+/* ============================================================
+   ENEMY DAMAGE
+============================================================ */
+
+function damageEnemy(enemy, amount) {
+
+    if (!enemy.alive) return;
+
+    enemy.health -= amount;
+
+    enemy.hitFlash = 140;
+
+    enemy.hitStun = 100;
+
+    enemy.x +=
+        player.direction * 10;
+
+    addDamageNumber(
+        enemy.x + enemy.width / 2,
+        enemy.y - 12,
+        Math.ceil(amount),
+        true
+    );
+
+    createHitParticles(
+        enemy.x + enemy.width / 2,
+        enemy.y + 20,
+        10
+    );
+
+    if (enemy.health <= 0) {
+
+        enemy.health = 0;
+
+        enemy.alive = false;
+
+        score += 150;
+
+        createHitParticles(
+            enemy.x + enemy.width / 2,
+            enemy.y + enemy.height / 2,
+            25
+        );
+
+        showStatus(
+            "HOSTILE NEUTRALIZED // +150"
+        );
+
+    } else {
+
+        showStatus(
+            "HOSTILE HIT // -" +
+            Math.ceil(amount) +
+            " HP"
+        );
+
+    }
+
+}
+
+/* ============================================================
+   PLAYER PLATFORM PHYSICS
+============================================================ */
+
+function updatePlayerPhysics() {
+
+    player.grounded = false;
+
+    for (const p of platforms) {
+
+        const wasAbove =
+            player.y + player.height - player.vy
+            <= p.y + 4;
+
+        const horizontal =
+            player.x + player.width > p.x &&
+            player.x < p.x + p.w;
+
+        if (
+            horizontal &&
+            player.y + player.height >= p.y &&
+            wasAbove &&
+            player.vy >= 0
+        ) {
+
+            player.y =
+                p.y - player.height;
+
+            player.vy = 0;
+
+            player.grounded = true;
+
+        }
+
+    }
+
+}
+
+/* ============================================================
+   ENEMY PLATFORM PHYSICS
+============================================================ */
+
+function updateEnemyPhysics(enemy, delta) {
+
+    enemy.vy += .75;
+
+    enemy.y += enemy.vy;
+
+    enemy.grounded = false;
+
+    for (const p of platforms) {
+
+        const horizontal =
+            enemy.x + enemy.width > p.x &&
+            enemy.x < p.x + p.w;
+
+        if (!horizontal) continue;
+
+        const previousBottom =
+            enemy.y +
+            enemy.height -
+            enemy.vy;
+
+        const currentBottom =
+            enemy.y +
+            enemy.height;
+
+        if (
+            enemy.vy >= 0 &&
+            previousBottom <= p.y + 8 &&
+            currentBottom >= p.y
+        ) {
+
+            enemy.y =
+                p.y - enemy.height;
+
+            enemy.vy = 0;
+
+            enemy.grounded = true;
+
+        }
+
+    }
+
+}
+
+/* ============================================================
+   ENEMY EDGE DETECTION
+============================================================ */
+
+function enemyShouldTurnAtEdge(enemy) {
+
+    if (!enemy.grounded) {
+
+        return false;
+
+    }
+
+    const checkX =
+        enemy.direction > 0
+            ? enemy.x + enemy.width + 8
+            : enemy.x - 8;
+
+    const checkY =
+        enemy.y + enemy.height + 8;
+
+    for (const p of platforms) {
+
+        if (
+            checkX >= p.x &&
+            checkX <= p.x + p.w &&
+            checkY >= p.y &&
+            checkY <= p.y + 35
+        ) {
+
+            return false;
+
+        }
+
+    }
+
+    return true;
+
+}
+
+/* ============================================================
+   UPDATE
+============================================================ */
+
+function update(delta) {
+
+    worldTime += delta;
+
+    /* ========================================================
+       PLAYER MOVEMENT
+    ======================================================== */
+
+    if (
+        keys["a"] ||
+        keys["arrowleft"]
+    ) {
+
+        player.vx -= player.speed;
+
+        player.direction = -1;
+
+    }
+
+    if (
+        keys["d"] ||
+        keys["arrowright"]
+    ) {
+
+        player.vx += player.speed;
+
+        player.direction = 1;
+
+    }
+
+    player.vx *= .82;
+
+    if (
+        player.vx >
+        player.maxSpeed
+    ) {
+
+        player.vx =
+            player.maxSpeed;
+
+    }
+
+    if (
+        player.vx <
+        -player.maxSpeed
+    ) {
+
+        player.vx =
+            -player.maxSpeed;
+
+    }
+
+    player.vy += .75;
+
+    player.x += player.vx;
+
+    player.y += player.vy;
+
+    if (player.x < 0) {
+
+        player.x = 0;
+
+    }
+
+    if (
+        player.x >
+        WORLD_WIDTH - player.width
+    ) {
+
+        player.x =
+            WORLD_WIDTH -
+            player.width;
+
+    }
+
+    updatePlayerPhysics();
+
+    /* ========================================================
+       FALLING
+    ======================================================== */
+
+    if (player.y > H + 150) {
+
+        damagePlayer(100);
+
+    }
+
+    /* ========================================================
+       WEAPON PICKUPS
+    ======================================================== */
+
+    for (const weapon of weapons) {
+
+        if (weapon.collected)
+            continue;
+
+        const distance =
+            Math.hypot(
+                player.x - weapon.x,
+                player.y - weapon.y
+            );
+
+        if (distance < 60) {
+
+            weapon.collected = true;
+
+            player.weapon =
+                weapon.name;
+
+            player.damage =
+                weapon.damage;
+
+            player.fireRate =
+                weapon.fireRate;
+
+            score += 100;
+
+            showStatus(
+                "WEAPON ACQUIRED // " +
+                weapon.name.toUpperCase()
+            );
+
+        }
+
+    }
+
+    /* ========================================================
+       HEALTH PICKUPS
+    ======================================================== */
+
+    for (const pickup of healthPickups) {
+
+        if (pickup.collected)
+            continue;
+
+        const distance =
+            Math.hypot(
+                player.x - pickup.x,
+                player.y - pickup.y
+            );
+
+        if (distance < 55) {
+
+            pickup.collected = true;
+
+            player.medkits++;
+
+            score += 50;
+
+            showStatus(
+                "MEDKIT ACQUIRED // PRESS H"
+            );
+
+        }
+
+    }
+
+    /* ========================================================
+       REGENERATION
+    ======================================================== */
+
+    const timeSinceDamage =
+        performance.now() -
+        player.lastDamageTime;
+
+    if (
+        timeSinceDamage >
+        player.regenerationDelay &&
+        player.health <
+        player.maxHealth
+    ) {
+
+        player.health +=
+            delta * .005;
+
+        if (
+            player.health >
+            player.maxHealth
+        ) {
+
+            player.health =
+                player.maxHealth;
+
+        }
+
+    }
+
+    /* ========================================================
+       ENEMIES
+    ======================================================== */
+
+    for (const enemy of enemies) {
+
+        if (!enemy.alive)
+            continue;
+
+        if (enemy.hitFlash > 0) {
+
+            enemy.hitFlash -= delta;
+
+        }
+
+        if (enemy.hitStun > 0) {
+
+            enemy.hitStun -= delta;
+
+        }
+
+        updateEnemyPhysics(
+            enemy,
+            delta
+        );
+
+        if (enemy.hitStun <= 0) {
+
+            enemy.x +=
+                enemy.direction *
+                enemy.speed;
+
+        }
+
+        /* World bounds */
+
+        if (
+            enemy.x < 0
+        ) {
+
+            enemy.x = 0;
+
+            enemy.direction = 1;
+
+        }
+
+        if (
+            enemy.x >
+            WORLD_WIDTH - enemy.width
+        ) {
+
+            enemy.x =
+                WORLD_WIDTH -
+                enemy.width;
+
+            enemy.direction = -1;
+
+        }
+
+        /* Platform edge */
+
+        if (
+            enemyShouldTurnAtEdge(enemy)
+        ) {
+
+            enemy.direction *= -1;
+
+        }
+
+        /* Player targeting */
+
+        const distanceX =
+            player.x -
+            enemy.x;
+
+        const distanceY =
+            player.y -
+            enemy.y;
+
+        if (
+            Math.abs(distanceX) <
+            650
+        ) {
+
+            enemy.direction =
+                distanceX > 0
+                    ? 1
+                    : -1;
+
+            const now =
+                performance.now();
+
+            if (
+                now -
+                enemy.lastShot >
+                enemy.shootCooldown
+            ) {
+
+                enemy.lastShot =
+                    now;
+
+                const startX =
+                    enemy.x +
+                    enemy.width / 2;
+
+                const startY =
+                    enemy.y + 20;
+
+                const targetX =
+                    player.x +
+                    player.width / 2;
+
+                const targetY =
+                    player.y +
+                    player.height / 2;
+
+                const dx =
+                    targetX - startX;
+
+                const dy =
+                    targetY - startY;
+
+                const distance =
+                    Math.max(
+                        1,
+                        Math.hypot(
+                            dx,
+                            dy
+                        )
+                    );
+
+                const bulletSpeed = 6;
+
+                bullets.push({
+
+                    x: startX,
+
+                    y: startY,
+
+                    vx:
+                        dx /
+                        distance *
+                        bulletSpeed,
+
+                    vy:
+                        dy /
+                        distance *
+                        bulletSpeed,
+
+                    damage: 8,
+
+                    enemy: true,
+
+                    life: 180
+
+                });
+
+            }
+
+        }
+
+        /* Enemy contact */
+
+        const enemyRect = {
+
+            x: enemy.x,
+
+            y: enemy.y,
+
+            width: enemy.width,
+
+            height: enemy.height
+
+        };
+
+        if (
+            collision(
+                player,
+                enemyRect
+            )
+        ) {
+
+            damagePlayer(10);
+
+            player.vx +=
+                enemy.direction *
+                -4;
+
+            player.vy = -5;
+
+        }
+
+    }
+
+    /* ========================================================
+       BULLETS
+    ======================================================== */
+
+    for (const bullet of bullets) {
+
+        bullet.x += bullet.vx;
+
+        bullet.y += bullet.vy;
+
+        bullet.life -=
+            delta * .06;
+
+        const bulletRect = {
+
+            x: bullet.x - 7,
+
+            y: bullet.y - 4,
+
+            width: 14,
+
+            height: 8
+
+        };
+
+        /* ====================================================
+           ENEMY BULLET
+        ==================================================== */
+
+        if (bullet.enemy) {
+
+            if (
+                collision(
+                    player,
+                    bulletRect
+                )
+            ) {
+
+                bullet.life = 0;
+
+                damagePlayer(
+                    bullet.damage
+                );
+
+            }
+
+        }
+
+        /* ====================================================
+           PLAYER BULLET
+        ==================================================== */
+
+        else {
+
+            for (
+                const enemy of enemies
+            ) {
+
+                if (!enemy.alive)
+                    continue;
+
+                const enemyRect = {
+
+                    x: enemy.x,
+
+                    y: enemy.y,
+
+                    width:
+                        enemy.width,
+
+                    height:
+                        enemy.height
+
+                };
+
+                if (
+                    collision(
+                        bulletRect,
+                        enemyRect
+                    )
+                ) {
+
+                    bullet.life = 0;
+
+                    damageEnemy(
+                        enemy,
+                        bullet.damage
+                    );
+
+                    break;
+
+                }
+
+            }
+
+        }
+
+    }
+
+    bullets =
+        bullets.filter(
+            bullet =>
+                bullet.life > 0 &&
+                bullet.x > -150 &&
+                bullet.x <
+                    WORLD_WIDTH + 150 &&
+                bullet.y > -150 &&
+                bullet.y <
+                    H + 150
+        );
+
+    /* ========================================================
+       EFFECTS
+    ======================================================== */
+
+    updateParticles(delta);
+
+    updateDamageNumbers(delta);
+
+    /* ========================================================
+       CAMERA
+    ======================================================== */
+
+    const targetCamera =
+        player.x -
+        W * .35;
+
+    cameraX +=
+        (
+            targetCamera -
+            cameraX
+        ) * .08;
+
+    cameraX =
+        Math.max(
+            0,
+            Math.min(
+                WORLD_WIDTH - W,
+                cameraX
+            )
+        );
+
+    updateHUD();
+
+}
+
+/* ============================================================
+   DAY / NIGHT
+============================================================ */
+
+function getDaylight() {
+
+    const cycle =
+        (worldTime / 100000) % 1;
+
+    return (
+        Math.sin(
+            cycle *
+            Math.PI *
+            2
+        ) + 1
+    ) / 2;
+
+}
+
+/* ============================================================
+   BACKGROUND
+============================================================ */
+
+function drawBackground() {
+
+    const daylight =
+        getDaylight();
+
+    const gradient =
+        ctx.createLinearGradient(
+            0,
+            0,
+            0,
+            H
+        );
+
+    if (daylight > .65) {
+
+        gradient.addColorStop(
+            0,
+            "#6a8fa5"
+        );
+
+        gradient.addColorStop(
+            1,
+            "#e09b66"
+        );
+
+    } else if (daylight > .35) {
+
+        gradient.addColorStop(
+            0,
+            "#422d58"
+        );
+
+        gradient.addColorStop(
+            1,
+            "#c76a62"
+        );
+
+    } else {
+
+        gradient.addColorStop(
+            0,
+            "#05051b"
+        );
+
+        gradient.addColorStop(
+            1,
+            "#18092e"
+        );
+
+    }
+
+    ctx.fillStyle =
+        gradient;
+
+    ctx.fillRect(
+        0,
+        0,
+        W,
+        H
+    );
+
+    /* Stars */
+
+    if (daylight < .5) {
+
+        ctx.save();
+
+        ctx.fillStyle =
+            "rgba(150,240,255,.8)";
+
+        for (
+            let i = 0;
+            i < 100;
+            i++
+        ) {
+
+            const x =
+                (i * 173) %
+                WORLD_WIDTH -
+                cameraX * .15;
+
+            const y =
+                (i * 71) %
+                280;
+
+            ctx.fillRect(
+                x,
+                y,
+                2,
+                2
+            );
+
+        }
+
+        ctx.restore();
+
+    }
+
+    /* Distant city */
+
+    ctx.save();
+
+    ctx.translate(
+        -cameraX * .25,
+        0
+    );
+
+    for (
+        let i = 0;
+        i < 60;
+        i++
+    ) {
+
+        const x =
+            i * 120;
+
+        const height =
+            180 +
+            (i % 7) * 35;
+
+        ctx.fillStyle =
+            "rgba(7,10,27,.85)";
+
+        ctx.fillRect(
+            x,
+            620 - height,
+            90,
+            height
+        );
+
+        for (
+            let y =
+                470 -
+                (i % 3) * 20;
+
+            y < 600;
+
+            y += 28
+        ) {
+
+            for (
+                let xx =
+                    x + 12;
+
+                xx <
+                    x + 80;
+
+                xx += 22
+            ) {
+
+                if (
+                    (i + y + xx) % 3
+                ) {
+
+                    ctx.fillStyle =
+                        daylight < .5
+                            ? "rgba(0,246,255,.45)"
+                            : "rgba(255,210,120,.25)";
+
+                    ctx.fillRect(
+                        xx,
+                        y,
+                        5,
+                        8
+                    );
+
+                }
+
+            }
+
+        }
+
+    }
+
+    ctx.restore();
+
+}
+
+/* ============================================================
+   DRAW
+============================================================ */
+
+function draw() {
+
+    drawBackground();
+
+    ctx.save();
+
+    ctx.translate(
+        -cameraX,
+        0
+    );
+
+    /* ========================================================
+       PLATFORMS
+    ======================================================== */
+
+    for (
+        const platform of platforms
+    ) {
+
+        ctx.fillStyle =
+            "#111624";
+
+        ctx.fillRect(
+            platform.x,
+            platform.y,
+            platform.w,
+            platform.h
+        );
+
+        ctx.fillStyle =
+            "#00dce8";
+
+        ctx.shadowColor =
+            "#00dce8";
+
+        ctx.shadowBlur = 8;
+
+        ctx.fillRect(
+            platform.x,
+            platform.y,
+            platform.w,
+            3
+        );
+
+        ctx.shadowBlur = 0;
+
+    }
+
+    /* ========================================================
+       WEAPONS
+    ======================================================== */
+
+    for (
+        const weapon of weapons
+    ) {
+
+        if (weapon.collected)
+            continue;
+
+        ctx.save();
+
+        ctx.translate(
+            weapon.x,
+            weapon.y
+        );
+
+        ctx.fillStyle =
+            weapon.color;
+
+        ctx.shadowColor =
+            weapon.color;
+
+        ctx.shadowBlur = 20;
+
+        ctx.fillRect(
+            -18,
+            -5,
+            36,
+            10
+        );
+
+        ctx.fillRect(
+            8,
+            -11,
+            5,
+            22
+        );
+
+        ctx.restore();
+
+    }
+
+    /* ========================================================
+       HEALTH
+    ======================================================== */
+
+    for (
+        const pickup of healthPickups
+    ) {
+
+        if (pickup.collected)
+            continue;
+
+        ctx.save();
+
+        ctx.translate(
+            pickup.x,
+            pickup.y
+        );
+
+        ctx.fillStyle =
+            "#ff3f78";
+
+        ctx.shadowColor =
+            "#ff3f78";
+
+        ctx.shadowBlur = 18;
+
+        ctx.fillRect(
+            -13,
+            -13,
+            26,
+            26
+        );
+
+        ctx.fillStyle =
+            "white";
+
+        ctx.fillRect(
+            -4,
+            -9,
+            8,
+            18
+        );
+
+        ctx.fillRect(
+            -9,
+            -4,
+            18,
+            8
+        );
+
+        ctx.restore();
+
+    }
+
+    /* ========================================================
+       ENEMIES
+    ======================================================== */
+
+    for (
+        const enemy of enemies
+    ) {
+
+        if (!enemy.alive)
+            continue;
+
+        /* Shadow */
+
+        ctx.fillStyle =
+            "rgba(0,0,0,.3)";
+
+        ctx.fillRect(
+            enemy.x - 3,
+            enemy.y +
+                enemy.height,
+            enemy.width + 6,
+            4
+        );
+
+        /* Body */
+
+        ctx.fillStyle =
+            enemy.hitFlash > 0
+                ? "#ffffff"
+                : "#c72968";
+
+        ctx.shadowColor =
+            "#ff2c9d";
+
+        ctx.shadowBlur =
+            enemy.hitFlash > 0
+                ? 25
+                : 10;
+
+        ctx.fillRect(
+            enemy.x,
+            enemy.y,
+            enemy.width,
+            enemy.height
+        );
+
+        ctx.shadowBlur = 0;
+
+        /* Armor */
+
+        ctx.fillStyle =
+            "#35152a";
+
+        ctx.fillRect(
+            enemy.x + 5,
+            enemy.y + 25,
+            enemy.width - 10,
+            18
+        );
+
+        /* Helmet */
+
+        ctx.fillStyle =
+            "#121522";
+
+        ctx.fillRect(
+            enemy.x + 5,
+            enemy.y + 8,
+            enemy.width - 10,
+            13
+        );
+
+        /* Visor */
+
+        ctx.fillStyle =
+            "#00f6ff";
+
+        ctx.fillRect(
+            enemy.direction > 0
+                ? enemy.x + 22
+                : enemy.x + 6,
+            enemy.y + 12,
+            6,
+            4
+        );
+
+        /* Gun */
+
+        ctx.fillStyle =
+            "#ff36d9";
+
+        ctx.fillRect(
+            enemy.direction > 0
+                ? enemy.x + 28
+                : enemy.x - 10,
+            enemy.y + 27,
+            16,
+            5
+        );
+
+        /* Health background */
+
+        ctx.fillStyle =
+            "#270d1c";
+
+        ctx.fillRect(
+            enemy.x,
+            enemy.y - 10,
+            enemy.width,
+            5
+        );
+
+        /* Health */
+
+        ctx.fillStyle =
+            "#ff3f78";
+
+        ctx.fillRect(
+            enemy.x,
+            enemy.y - 10,
+            enemy.width *
+            (
+                enemy.health /
+                enemy.maxHealth
+            ),
+            5
+        );
+
+    }
+
+    /* ========================================================
+       BULLETS
+    ======================================================== */
+
+    for (
+        const bullet of bullets
+    ) {
+
+        const color =
+            bullet.enemy
+                ? "#ff3f78"
+                : "#8cffff";
+
+        ctx.fillStyle =
+            color;
+
+        ctx.shadowColor =
+            color;
+
+        ctx.shadowBlur = 15;
+
+        ctx.fillRect(
+            bullet.x - 8,
+            bullet.y - 2,
+            16,
+            4
+        );
+
+        if (bullet.enemy) {
+
+            ctx.fillRect(
+                bullet.x - 12,
+                bullet.y - 1,
+                24,
+                2
+            );
+
+        }
+
+        ctx.shadowBlur = 0;
+
+    }
+
+    /* ========================================================
+       PARTICLES
+    ======================================================== */
+
+    drawParticles();
+
+    /* ========================================================
+       PLAYER
+    ======================================================== */
+
+    drawPlayer();
+
+    /* ========================================================
+       DAMAGE NUMBERS
+    ======================================================== */
+
+    drawDamageNumbers();
+
+    ctx.restore();
+
+    /* Mission marker */
+
+    if (
+        player.x >
+        WORLD_WIDTH - 500
+    ) {
+
+        ctx.fillStyle =
+            "#00f6ff";
+
+        ctx.font =
+            "bold 14px Arial";
+
+        ctx.fillText(
+            "EXTRACTION →",
+            W - 160,
+            H - 100
+        );
+
+    }
+
+}
+
+/* ============================================================
+   PLAYER DRAW
+============================================================ */
+
+function drawPlayer() {
+
+    const x =
+        player.x;
+
+    const y =
+        player.y;
+
+    ctx.save();
+
+    ctx.shadowColor =
+        "#00f6ff";
+
+    ctx.shadowBlur = 15;
+
+    /* Body */
+
+    ctx.fillStyle =
+        "#dffcff";
+
+    ctx.fillRect(
+        x,
+        y,
+        player.width,
+        player.height
+    );
+
+    ctx.shadowBlur = 0;
+
+    /* Armor */
+
+    ctx.fillStyle =
+        "#20273a";
+
+    ctx.fillRect(
+        x + 5,
+        y + 22,
+        24,
+        27
+    );
+
+    /* Helmet */
+
+    ctx.fillStyle =
+        "#101522";
+
+    ctx.fillRect(
+        x + 4,
+        y + 4,
+        26,
+        18
+    );
+
+    /* Visor */
+
+    ctx.fillStyle =
+        "#00f6ff";
+
+    ctx.fillRect(
+        player.direction > 0
+            ? x + 20
+            : x + 7,
+        y + 10,
+        7,
+        4
+    );
+
+    /* Weapon */
+
+    ctx.fillStyle =
+        "#ff36d9";
+
+    ctx.shadowColor =
+        "#ff36d9";
+
+    ctx.shadowBlur = 10;
+
+    ctx.fillRect(
+        player.direction > 0
+            ? x + 25
+            : x - 17,
+        y + 27,
+        18,
+        6
+    );
+
+    ctx.restore();
+
+}
+
+/* ============================================================
+   HUD
+============================================================ */
+
+function updateHUD() {
+
+    document.getElementById(
+        "health-text"
+    ).textContent =
+        Math.ceil(
+            player.health
+        );
+
+    document.getElementById(
+        "health-fill"
+    ).style.width =
+        player.health + "%";
+
+    document.getElementById(
+        "weapon-text"
+    ).textContent =
+        player.weapon.toUpperCase();
+
+    document.getElementById(
+        "medkit-text"
+    ).textContent =
+        player.medkits;
+
+    document.getElementById(
+        "score-text"
+    ).textContent =
+        score;
+
+    const daylight =
+        getDaylight();
+
+    let cycleName;
+
+    if (daylight > .68) {
+
+        cycleName =
+            "DAY";
+
+    } else if (
+        daylight > .38
+    ) {
+
+        cycleName =
+            "DAWN / DUSK";
+
+    } else {
+
+        cycleName =
+            "NIGHT";
+
+    }
+
+    document.getElementById(
+        "cycle-text"
+    ).textContent =
+        cycleName;
+
+    const timeSinceDamage =
+        performance.now() -
+        player.lastDamageTime;
+
+    if (
+        timeSinceDamage >
+        player.regenerationDelay
+    ) {
+
+        document.getElementById(
+            "regen-text"
+        ).textContent =
+            "REGEN ACTIVE";
+
+    } else {
+
+        const remaining =
+            Math.ceil(
+                (
+                    player.regenerationDelay -
+                    timeSinceDamage
+                ) / 1000
+            );
+
+        document.getElementById(
+            "regen-text"
+        ).textContent =
+            "REGEN IN " +
+            Math.max(
+                0,
+                remaining
+            ) +
+            "s";
+
+    }
+
+}
+
+/* ============================================================
+   STATUS
+============================================================ */
+
+let statusTimer = null;
+
+function showStatus(message) {
+
+    const status =
+        document.getElementById(
+            "status-message"
+        );
+
+    status.textContent =
+        message;
+
+    clearTimeout(
+        statusTimer
+    );
+
+    statusTimer =
+        setTimeout(() => {
+
+            status.textContent =
+                "SURVIVE THE SECTOR";
+
+        }, 2200);
+
+}
+
+/* ============================================================
+   GAME LOOP
+============================================================ */
+
+function gameLoop(time) {
+
+    if (!gameRunning)
+        return;
+
+    const delta =
+        Math.min(
+            32,
+            time - lastTime
+        );
+
+    lastTime = time;
+
+    update(delta);
+
+    draw();
+
+    animationId =
+        requestAnimationFrame(
+            gameLoop
+        );
+
+}
+
+/* ============================================================
+   START
+============================================================ */
+
+function startGame() {
+
+    resetGame();
+
+    document.getElementById(
+        "main-menu"
+    ).style.display =
+        "none";
+
+    document.getElementById(
+        "game-over"
+    ).style.display =
+        "none";
+
+    gameRunning = true;
+
+    lastTime =
+        performance.now();
+
+    showStatus(
+        "MISSION STARTED // SECTOR 09"
+    );
+
+    cancelAnimationFrame(
+        animationId
+    );
+
+    animationId =
+        requestAnimationFrame(
+            gameLoop
+        );
+
+}
+
+/* ============================================================
+   GAME OVER
+============================================================ */
+
+function gameOver() {
+
+    if (!gameRunning)
+        return;
+
+    gameRunning = false;
+
+    cancelAnimationFrame(
+        animationId
+    );
+
+    document.getElementById(
+        "final-score"
+    ).textContent =
+        "FINAL SCORE: " +
+        score;
+
+    document.getElementById(
+        "game-over"
+    ).style.display =
+        "flex";
+
+}
+
+/* ============================================================
+   KEYBOARD
+============================================================ */
+
+window.addEventListener(
+    "keydown",
+    event => {
+
+        const key =
+            event.key.toLowerCase();
+
+        keys[key] = true;
+
+        if (
+            [
+                " ",
+                "arrowup",
+                "w"
+            ].includes(key)
+        ) {
+
+            event.preventDefault();
+
+            jump();
+
+        }
+
+        if (key === "f") {
+
+            shoot();
+
+        }
+
+        if (key === "h") {
+
+            useMedkit();
+
+        }
+
+    }
+);
+
+window.addEventListener(
+    "keyup",
+    event => {
+
+        keys[
+            event.key.toLowerCase()
+        ] = false;
+
+    }
+);
+
+/* ============================================================
+   BUTTONS
+============================================================ */
+
+document.getElementById(
+    "start-button"
+).addEventListener(
+    "click",
+    startGame
+);
+
+document.getElementById(
+    "restart-button"
+).addEventListener(
+    "click",
+    startGame
+);
+
+/* ============================================================
+   MOBILE
+============================================================ */
+
+function holdButton(
+    id,
+    key
+) {
+
+    const button =
+        document.getElementById(id);
+
+    button.addEventListener(
+        "pointerdown",
+        event => {
+
+            event.preventDefault();
+
+            keys[key] = true;
+
+        }
+    );
+
+    button.addEventListener(
+        "pointerup",
+        event => {
+
+            event.preventDefault();
+
+            keys[key] = false;
+
+        }
+    );
+
+    button.addEventListener(
+        "pointercancel",
+        () => {
+
+            keys[key] = false;
+
+        }
+    );
+
+    button.addEventListener(
+        "pointerleave",
+        () => {
+
+            keys[key] = false;
+
+        }
+    );
+
+}
+
+holdButton(
+    "left-button",
+    "arrowleft"
+);
+
+holdButton(
+    "right-button",
+    "arrowright"
+);
+
+document.getElementById(
+    "jump-button"
+).addEventListener(
+    "click",
+    jump
+);
+
+document.getElementById(
+    "fire-button"
+).addEventListener(
+    "click",
+    shoot
+);
+
+document.getElementById(
+    "heal-button"
+).addEventListener(
+    "click",
+    useMedkit
+);
+
+/* ============================================================
+   BOOT SEQUENCE
+============================================================ */
+
+let bootProgress = 0;
+
+const bootMessages = [
+
+    "INITIALIZING NEURAL KERNEL...",
+
+    "LOADING SECTOR-09...",
+
+    "CALIBRATING WEAPON SYSTEMS...",
+
+    "CONNECTING HEALTH MATRIX...",
+
+    "SYNCHRONIZING DAY/NIGHT CYCLE...",
+
+    "SCANNING HOSTILES...",
+
+    "LOP SOFT SYSTEM READY."
+
+];
+
+const bootTimer =
+    setInterval(() => {
+
+        bootProgress +=
+            Math.random() * 12 + 5;
+
+        if (
+            bootProgress > 100
+        ) {
+
+            bootProgress = 100;
+
+        }
+
+        document.getElementById(
+            "boot-progress-bar"
+        ).style.width =
+            bootProgress + "%";
+
+        const messageIndex =
+            Math.min(
+                bootMessages.length - 1,
+
+                Math.floor(
+                    bootProgress /
+                    100 *
+                    bootMessages.length
+                )
+            );
+
+        document.getElementById(
+            "boot-status"
+        ).textContent =
+            bootMessages[
+                messageIndex
+            ];
+
+        if (
+            bootProgress >= 100
+        ) {
+
+            clearInterval(
+                bootTimer
+            );
+
+            setTimeout(() => {
+
+                document.getElementById(
+                    "boot-screen"
+                ).style.display =
+                    "none";
+
+                document.getElementById(
+                    "main-menu"
+                ).style.display =
+                    "flex";
+
+            }, 600);
+
+        }
+
+    }, 140);
+
+/* ============================================================
+   INITIAL
+============================================================ */
+
+createEnemies();
+
+draw();
+
+</script>
+
+</body>
+</html>
+```

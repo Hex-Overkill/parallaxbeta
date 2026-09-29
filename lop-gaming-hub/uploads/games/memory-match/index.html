@@ -1,0 +1,28 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Memory Match</title><style>
+body{margin:0;background:#0a0e17;display:flex;flex-direction:column;align-items:center;padding:24px;font-family:Verdana,sans-serif;color:#8fa3c4}
+h1{font-size:16px;letter-spacing:4px;color:#8b5cf6;text-transform:uppercase;margin:0 0 8px}
+#info{font-size:14px;color:#e8eefb;margin-bottom:16px}
+#board{display:grid;grid-template-columns:repeat(4,84px);gap:10px}
+.card{width:84px;height:84px;background:#1a1440;border:1px solid #4c3a9e;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:34px;user-select:none;transition:transform .15s}
+.card.flip{background:#261b52;border-color:#8b5cf6}
+.card.matched{background:rgba(139,92,246,.15);border-color:#22c55e;cursor:default}
+.card:hover:not(.matched){transform:scale(1.05)}
+#win{display:none;margin-top:14px;font-size:17px;color:#6fe9a0;font-weight:bold}
+</style></head><body>
+<h1>Memory Match</h1><div id="info">Moves: 0</div>
+<div id="board"></div><div id="win">🎉 All matched in <span id="wm"></span> moves!</div>
+<script>
+var SYMS=['🚀','⚡','🔥','💎','🎧','🕹️','👾','💫'];
+var deck=SYMS.concat(SYMS).sort(function(){return Math.random()-.5;});
+var board=document.getElementById('board'),flipped=[],moves=0,locked=false,matched=0;
+deck.forEach(function(s,i){var d=document.createElement('div');d.className='card';d.dataset.sym=s;d.dataset.i=i;d.textContent='?';
+ d.addEventListener('click',function(){if(locked||d.classList.contains('flip')||d.classList.contains('matched'))return;
+  d.textContent=s;d.classList.add('flip');flipped.push(d);
+  if(flipped.length===2){locked=true;moves++;document.getElementById('info').textContent='Moves: '+moves;
+   var a=flipped[0],b=flipped[1];
+   if(a.dataset.sym===b.dataset.sym){a.classList.add('matched');b.classList.add('matched');matched+=2;
+    if(matched===16){document.getElementById('win').style.display='block';document.getElementById('wm').textContent=moves;}}
+   else setTimeout(function(){a.textContent='?';b.textContent='?';a.classList.remove('flip');b.classList.remove('flip');},650);
+   flipped=[];setTimeout(function(){locked=false;},680);}});
+ board.appendChild(d);});
+</script></body></html>

@@ -1,0 +1,36 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Snake</title><style>
+body{margin:0;background:#0a0e17;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;font-family:Verdana,sans-serif;color:#8fa3c4}
+h1{font-size:18px;letter-spacing:4px;color:#22c55e;text-transform:uppercase;margin:0 0 8px}
+#score{font-size:14px;margin-bottom:8px;color:#e8eefb}
+canvas{background:#0d2b18;border:2px solid #22c55e;border-radius:8px;box-shadow:0 0 30px rgba(34,197,94,.25)}
+#over{display:none;position:absolute;background:rgba(10,14,23,.92);padding:24px 40px;border-radius:12px;border:1px solid #22c55e;text-align:center}
+#over h2{color:#22c55e;margin:0 0 10px;letter-spacing:2px}
+#over button{margin-top:12px;padding:10px 26px;font-size:15px;background:#22c55e;border:0;border-radius:8px;cursor:pointer;color:#06210f;font-weight:bold}
+</style></head><body>
+<h1>Snake</h1><div id="score">Score 0</div>
+<div style="position:relative"><canvas id="c" width="440" height="440"></canvas><div id="over"><h2>GAME OVER</h2><div style="color:#8fa3c4" id="fin"></div><button onclick="location.reload()">Play again</button></div></div>
+<script>
+var cv=document.getElementById('c'),ctx=cv.getContext('2d'),N=22,cell=cv.width/N,dir={x:1,y:0},q=[{x:9,y:10},{x:8,y:10},{x:7,y:10}],food,tick=0,acc=0,step=110,score=0,dead=false;
+function placeFood(){while(true){var f={x:~~(Math.random()*N),y:~~(Math.random()*N)};if(!q.some(s=>s.x===f.x&&s.y===f.y)){food=f;return}}}
+placeFood();
+document.addEventListener('keydown',function(e){var k=e.key.toLowerCase();
+ if((k==='arrowup'||k==='w')&&dir.y===0)dir={x:0,y:-1};
+ if((k==='arrowdown'||k==='s')&&dir.y===0)dir={x:0,y:1};
+ if((k==='arrowleft'||k==='a')&&dir.x===0)dir={x:-1,y:0};
+ if((k==='arrowright'||k==='d')&&dir.x===0)dir={x:1,y:0};});
+function frame(now){requestAnimationFrame(frame);if(dead)return;
+ var dt=now-(acc||now);acc=now;tick+=dt;
+ ctx.fillStyle='#0d2b18';ctx.fillRect(0,0,cv.width,cv.height);
+ ctx.fillStyle='#ff4757';ctx.beginPath();ctx.arc(food.x*cell+cell/2,food.y*cell+cell/2,cell*.34,0,7);ctx.fill();
+ q.forEach(function(s,i){ctx.fillStyle=i===0?'#8ff0b4':'#22c55e';ctx.fillRect(s.x*cell+1,s.y*cell+1,cell-2,cell-2);});
+ if(tick>=step){tick=0;stepMove();}
+ function stepMove(){
+  var h={x:q[0].x+dir.x,y:q[0].y+dir.y};
+  if(h.x<0||h.y<0||h.x>=N||h.y>=N||q.some(s=>s.x===h.x&&s.y===h.y)){gameOver();return}
+  q.unshift(h);
+  if(h.x===food.x&&h.y===food.y){score++;document.getElementById('score').textContent='Score '+score;placeFood();}
+  else q.pop();
+ }}
+ function gameOver(){dead=true;document.getElementById('over').style.display='block';document.getElementById('fin').textContent='Final score: '+score;}
+requestAnimationFrame(frame);
+</script></body></html>

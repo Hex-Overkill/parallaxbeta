@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}My Profile — LoP Gaming Hub{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="page-head profile-head">
+    <div class="avatar avatar-lg">{{ current_user.username[:1]|upper }}</div>
+    <div>
+      <h1 class="page-title">{{ current_user.username }}</h1>
+      <p class="page-sub">
+        Member since {{ current_user.created_at.strftime('%B %Y') }} &middot;
+        {% if premium_state == 'active' %}
+          <span class="premium-mark">{{ premium_plan }} until {{ premium_end.strftime('%B %d, %Y') }}</span>
+        {% elif premium_state == 'trial' %}
+          <span class="trial-mark">Trial ends {{ premium_end.strftime('%B %d, %Y') }}</span>
+        {% elif premium_state == 'expired' %}
+          <span class="expired-mark">{{ premium_plan }} expired</span>
+        {% else %}
+          Free player
+        {% endif %}
+      </p>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card"><span class="stat-num">{{ total_seconds|fmt_duration }}</span><span class="stat-label">Total playtime</span></div>
+    <div class="stat-card"><span class="stat-num">{{ total_plays }}</span><span class="stat-label">Games played</span></div>
+    <div class="stat-card"><span class="stat-num">{{ stats|length }}</span><span class="stat-label">Games tried</span></div>
+  </div>
+
+  <div class="card">
+    <h3 class="card-title">📊 Your activity</h3>
+    {% if stats %}
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Game</th><th>Type</th><th>Plays</th><th>Time</th><th>Last played</th><th></th></tr></thead>
+          <tbody>
+            {% for s in stats %}
+              <tr>
+                <td><a class="link-accent" href="{{ url_for('games.detail', slug=s.slug) }}">{{ s.title }}</a></td>
+                <td>{% if s.is_premium %}<span class="badge badge-premium">PREMIUM</span>{% else %}<span class="badge badge-free">FREE</span>{% endif %}</td>
+                <td>{{ s.plays }}</td>
+                <td>{{ s.seconds|fmt_duration }}</td>
+                <td>{{ s.last_played|time_ago }}</td>
+                <td><a class="btn btn-ghost btn-sm" href="{{ url_for('games.play', slug=s.slug) }}">Play again</a></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="empty-state">No plays yet. <a href="{{ url_for('games.library') }}">Pick a game</a> and get that first W.</p>
+    {% endif %}
+  </div>
+
+  {% if payments %}
+    <div class="card">
+      <h3 class="card-title">🧾 Payment history</h3>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>#</th><th>Date</th><th>Transaction</th><th>Status</th><th>Note</th></tr></thead>
+          <tbody>
+            {% for p in payments %}
+              <tr>
+                <td>#{{ p.id }}</td>
+                <td>{{ p.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td><code>{{ p.transaction_id }}</code></td>
+                <td>
+                  {% if p.status == 'pending' %}<span class="pill pill-pending">Pending</span>
+                  {% elif p.status == 'approved' %}<span class="pill pill-approved">Approved</span>
+                  {% else %}<span class="pill pill-rejected">Rejected</span>{% endif %}
+                </td>
+                <td>{{ p.admin_note or '—' }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

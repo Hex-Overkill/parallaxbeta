@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}LoP Premium — LoP Gaming Hub{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="page-head">
+    <h1 class="page-title">⭐ {{ premium_plan }}</h1>
+    <p class="page-sub">One yearly token. Every Premium game. Zero ads. All multiplayer lounges.</p>
+  </div>
+
+  {% if state == 'admin' %}
+    <div class="card status-card status-admin">
+      <h2>You are an administrator 🛡️</h2>
+      <p>Premium access is granted to you by default — free forever.</p>
+    </div>
+  {% elif state == 'active' %}
+    <div class="card status-card status-active">
+      <h2>{{ premium_plan }} is active ✨</h2>
+      <p>Your token runs until <strong>{{ premium_end.strftime('%B %d, %Y') }}</strong> ({{ days_left }} days left).</p>
+      <p class="form-hint">Renewals stack: buying another year while active extends your access by 12 more months.</p>
+    </div>
+  {% elif state == 'trial' %}
+    <div class="card status-card status-trial">
+      <h2>Your {{ trial_days }}-day trial is running ⏳</h2>
+      <p>Trial ends <strong>{{ premium_end.strftime('%B %d, %Y') }}</strong> — <strong>{{ days_left }} days left</strong>.
+        All Premium games are unlocked right now, but when the trial ends they lock until you activate a token.</p>
+    </div>
+  {% elif state == 'expired' %}
+    <div class="card status-card status-expired">
+      <h2>Your access has expired ⚠️</h2>
+      <p>Premium games are locked on your account. Grab a new yearly token below to jump straight back in.</p>
+    </div>
+  {% else %}
+    <div class="card status-card">
+      <h2>No active access</h2>
+      <p>Free games are yours to play forever. Premium games unlock with a token.</p>
+    </div>
+  {% endif %}
+
+  <div class="premium-grid">
+    <div class="card plan-card">
+      <div class="plan-top">
+        <span class="plan-name">{{ premium_plan }}</span>
+        <span class="plan-price">${{ premium_price }}<small>/year</small></span>
+      </div>
+      <ul class="plan-list">
+        <li>Yearly token — activate once, play all year</li>
+        <li>Unlock every Premium game in the library</li>
+        <li>Priority access to new game drops</li>
+        <li>All multiplayer chatrooms included</li>
+        <li>Pay once &middot; verified manually by our team</li>
+      </ul>
+    </div>
+
+    <div class="card steps-card">
+      <h3 class="card-title">How to activate</h3>
+      <ol class="steps">
+        <li><strong>Pay ${{ premium_price }}</strong> via PayPal to
+          <code>{{ paypal_receiver }}</code>.</li>
+        <li><strong>Screenshot the payment confirmation</strong> (receipt page or email showing the transaction ID).</li>
+        <li><strong>Submit it below</strong> with your PayPal email + transaction ID.</li>
+        <li>Our team <strong>verifies and approves</strong> your token within 24 hours — your access starts instantly.</li>
+      </ol>
+      <p class="form-hint">🎯 Payment is sent directly to our PayPal — we never see or store your PayPal password. The screenshot is proof of purchase only.</p>
+    </div>
+  </div>
+
+  <div class="card submit-card">
+    <h3 class="card-title">Submit your purchase</h3>
+    <form method="post" action="{{ url_for('premium.request_purchase') }}" enctype="multipart/form-data" class="form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="paypal_email">PayPal email (the account you paid from)</label>
+          <input class="form-control" type="email" id="paypal_email" name="paypal_email" required placeholder="you@example.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="transaction_id">PayPal transaction ID</label>
+          <input class="form-control" type="text" id="transaction_id" name="transaction_id" required placeholder="0PA12345ABC678901">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="screenshot">Payment screenshot (PNG, JPG, GIF, WebP — max 5 MB)</label>
+        <input class="form-control" type="file" id="screenshot" name="screenshot" accept="image/png,image/jpeg,image/gif,image/webp" required>
+      </div>
+      <button class="btn btn-gold" type="submit">Submit Payment Proof</button>
+    </form>
+  </div>
+
+  {% if submissions %}
+    <div class="card">
+      <h3 class="card-title">Your submissions</h3>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>#</th><th>Date</th><th>Transaction ID</th><th>Amount</th><th>Status</th><th>Admin note</th></tr></thead>
+          <tbody>
+            {% for p in submissions %}
+              <tr>
+                <td>#{{ p.id }}</td>
+                <td>{{ p.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td><code>{{ p.transaction_id }}</code></td>
+                <td>${{ '%.2f'|format(p.amount) }}</td>
+                <td>
+                  {% if p.status == 'pending' %}<span class="pill pill-pending">Pending verification</span>
+                  {% elif p.status == 'approved' %}<span class="pill pill-approved">Approved ✓</span>
+                  {% else %}<span class="pill pill-rejected">Rejected</span>{% endif %}
+                </td>
+                <td>{{ p.admin_note or '—' }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

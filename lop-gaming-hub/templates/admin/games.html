@@ -1,0 +1,80 @@
+{% extends "admin/base.html" %}
+{% block title_suffix %}Games{% endblock %}
+{% block admin_content %}
+<div class="page-head">
+  <h1 class="page-title">Games</h1>
+  <p class="page-sub">{{ games|length }} packages in the library.</p>
+  <a class="btn btn-primary" href="{{ url_for('admin.game_upload') }}">+ Upload game</a>
+</div>
+
+{% if games %}
+  <div class="card">
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Game</th><th>Category</th><th>Stats</th><th>Flags</th><th>Uploaded</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for g in games %}
+            <tr class="{% if not g.is_active %}row-inactive{% endif %}">
+              <td>
+                <div class="cell-game">
+                  {% if g.thumbnail %}
+                    <img class="cell-thumb" src="{{ url_for('games.thumb', name=g.thumbnail.replace('game-thumb/', '')) }}" alt="">
+                  {% else %}
+                    <span class="cell-thumb thumb-fallback">{{ g.title[:1]|upper }}</span>
+                  {% endif %}
+                  <div>
+                    <strong>{{ g.title }}</strong>
+                    <span class="cell-sub">v{{ g.version }} &middot; {{ g.slug }}</span>
+                  </div>
+                </div>
+              </td>
+              <td>{{ g.category }}</td>
+              <td>{{ g.play_count }} plays<br>{{ g.total_playtime|fmt_duration }} played</td>
+              <td>
+                <div class="flag-stack">
+                  <label class="switch-label">
+                    Premium
+                    <input type="checkbox" class="toggle" data-game="{{ g.id }}" data-field="is_premium" {% if g.is_premium %}checked{% endif %}>
+                  </label>
+                  <label class="switch-label">
+                    Multiplayer
+                    <input type="checkbox" class="toggle" data-game="{{ g.id }}" data-field="is_multiplayer" {% if g.is_multiplayer %}checked{% endif %}>
+                  </label>
+                  <label class="switch-label">
+                    Featured
+                    <input type="checkbox" class="toggle" data-game="{{ g.id }}" data-field="is_featured" {% if g.is_featured %}checked{% endif %}>
+                  </label>
+                  <label class="switch-label">
+                    Live
+                    <input type="checkbox" class="toggle" data-game="{{ g.id }}" data-field="is_active" {% if g.is_active %}checked{% endif %}>
+                  </label>
+                </div>
+              </td>
+              <td>{{ g.created_at.strftime('%Y-%m-%d') }}</td>
+              <td>
+                <div class="cell-actions">
+                  <a class="btn btn-ghost btn-sm" href="{{ url_for('games.detail', slug=g.slug) }}" target="_blank">View</a>
+                  <form method="post" action="{{ url_for('admin.game_delete', game_id=g.id) }}" class="inline-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="btn btn-danger btn-sm" type="submit" data-confirm="Delete '{{ g.title }}' and all its files? This cannot be undone.">Delete</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% else %}
+  <div class="empty-state">
+    <div class="empty-icon">📦</div>
+    <h3>Library is empty</h3>
+    <p>Time to <a href="{{ url_for('admin.game_upload') }}">upload your first web game</a>.</p>
+  </div>
+{% endif %}
+{% endblock %}

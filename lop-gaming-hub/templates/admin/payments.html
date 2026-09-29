@@ -1,0 +1,65 @@
+{% extends "admin/base.html" %}
+{% block title_suffix %}Payments{% endblock %}
+{% block admin_content %}
+<div class="page-head">
+  <h1 class="page-title">Payments</h1>
+  <p class="page-sub">Verify PayPal screenshots and approve yearly {{ premium_plan }} tokens (${{ premium_price }}/year).</p>
+</div>
+
+<div class="tab-bar">
+  <a class="tab {% if tab == 'pending' %}active{% endif %}" href="{{ url_for('admin.payments', tab='pending') }}">Pending ({{ counts.pending }})</a>
+  <a class="tab {% if tab == 'approved' %}active{% endif %}" href="{{ url_for('admin.payments', tab='approved') }}">Approved ({{ counts.approved }})</a>
+  <a class="tab {% if tab == 'rejected' %}active{% endif %}" href="{{ url_for('admin.payments', tab='rejected') }}">Rejected ({{ counts.rejected }})</a>
+  <a class="tab {% if tab == 'all' %}active{% endif %}" href="{{ url_for('admin.payments', tab='all') }}">All</a>
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th>#</th><th>User</th><th>Amount</th><th>PayPal email</th><th>Transaction ID</th><th>Screenshot</th><th>Date</th><th>Status</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        {% for p in items %}
+          <tr>
+            <td>#{{ p.id }}</td>
+            <td><a class="link-accent" href="{{ url_for('admin.user_detail', user_id=p.user_id) }}">{{ p.user.username }}</a></td>
+            <td>${{ '%.2f'|format(p.amount) }}</td>
+            <td>{{ p.paypal_email }}</td>
+            <td><code>{{ p.transaction_id }}</code></td>
+            <td><a class="btn btn-ghost btn-sm" href="{{ url_for('admin.payment_screenshot', payment_id=p.id) }}" target="_blank" rel="noopener">View proof</a></td>
+            <td>{{ p.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td>
+              {% if p.status == 'pending' %}<span class="pill pill-pending">Pending</span>
+              {% elif p.status == 'approved' %}<span class="pill pill-approved">Approved</span>
+              {% else %}<span class="pill pill-rejected">Rejected</span>{% endif %}
+            </td>
+            <td>
+              {% if p.status == 'pending' %}
+                <div class="cell-actions">
+                  <form class="inline-form" method="post" action="{{ url_for('admin.payment_review', payment_id=p.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="decision" value="approve">
+                    <button class="btn btn-primary btn-sm" type="submit" data-confirm="Approve payment #{{ p.id }}? {{ p.user.username }} gets a 365-day {{ premium_plan }} token.">✓ Approve</button>
+                  </form>
+                  <form class="inline-form" method="post" action="{{ url_for('admin.payment_review', payment_id=p.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="decision" value="reject">
+                    <input class="rej-note" type="text" name="note" maxlength="300" placeholder="Rejection reason…">
+                    <button class="btn btn-danger btn-sm" type="submit" data-confirm="Reject payment #{{ p.id }}?">✕ Reject</button>
+                  </form>
+                </div>
+              {% else %}
+                <span class="cell-sub">{{ p.admin_note or '—' }}
+                  {% if p.reviewed_at %} · {{ p.reviewed_at.strftime('%m-%d %H:%M') }}{% endif %}</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="9" class="empty-state">No payments in this view.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}{{ room.name }} — LoP Gaming Hub{% endblock %}
+{% block content %}
+<div class="container chat-wrap" data-room-id="{{ room.id }}">
+  <div class="chat-head">
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('chat.hub') }}">← All rooms</a>
+    <h1 class="chat-title">{{ room.name }}
+      {% if room.game %}
+        <a class="chat-game-link" href="{{ url_for('games.detail', slug=room.game.slug) }}">↗ {{ room.game.title }}</a>
+      {% endif %}
+    </h1>
+    <div class="chat-online"><span id="onlineCount" class="online-chip">{{ online|length }} online</span>
+      <span id="onlineNames" class="online-names">{{ online|join(', ') }}</span>
+    </div>
+  </div>
+
+  <div class="chat-box">
+    <div class="chat-messages" id="chatMessages">
+      {% for m in messages %}
+        <div class="msg {% if m.user_id == current_user.id %}msg-me{% endif %}" data-msg-id="{{ m.id }}">
+          <span class="msg-avatar">{{ (m.user.username if m.user else 'deleted')[:1]|upper }}</span>
+          <div class="msg-body">
+            <p class="msg-meta"><strong>{{ m.user.username if m.user else 'deleted' }}</strong>
+              <time>{{ m.created_at.strftime('%H:%M:%S') }}</time></p>
+            <p class="msg-text">{{ m.content }}</p>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+    <form class="chat-input" id="chatForm">
+      <input class="form-control" id="chatText" type="text" maxlength="500" placeholder="Type a message…" autocomplete="off">
+      <button class="btn btn-primary" type="submit">Send</button>
+    </form>
+    <p class="chat-rule">Keep it respectful. Ban-hammer has no cooldown.</p>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+{% endblock %}

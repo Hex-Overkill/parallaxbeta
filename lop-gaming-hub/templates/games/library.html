@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Game Library — LoP Gaming Hub{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="page-head">
+    <h1 class="page-title">Game Library</h1>
+    <p class="page-sub">
+      {% if premium_state == 'trial' %}You're on a <strong class="trial-mark">{{ trial_days }}-day Premium trial</strong> — every game is unlocked!
+      {% elif premium_state == 'active' %}<span class="premium-mark">LoP Premium active</span> — the full library is yours.
+      {% elif premium_state == 'expired' %}Your Premium expired —<a href="{{ url_for('premium.index') }}"> renew</a> to unlock Premium games.
+      {% else %}Free games are always yours to play.<a href="{{ url_for('premium.index') }}"> Go Premium</a> for the rest.
+      {% endif %}
+    </p>
+  </div>
+
+  <form class="filter-bar" method="get">
+    <input class="form-control search-input" type="search" name="q" value="{{ q }}" placeholder="Search games…">
+    <select class="form-control filter-select" name="category">
+      <option value="">All categories</option>
+      {% for c in categories %}
+        <option value="{{ c }}" {% if category == c %}selected{% endif %}>{{ c }}</option>
+      {% endfor %}
+    </select>
+    <select class="form-control filter-select" name="sort">
+      <option value="popular" {% if sort == 'popular' %}selected{% endif %}>Most popular</option>
+      <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Newest first</option>
+      <option value="plays" {% if sort == 'plays' %}selected{% endif %}>Most plays</option>
+    </select>
+    <button class="btn btn-primary" type="submit">Filter</button>
+  </form>
+
+  {% if games %}
+    <div class="game-grid">
+      {% for game in games %}
+        {% include "partials/game_card.html" %}
+      {% endfor %}
+    </div>
+
+    {% if pagination.pages > 1 %}
+      <div class="pagination">
+        {% if pagination.has_prev %}
+          <a class="btn btn-ghost btn-sm" href="{{ url_for('games.library', page=pagination.prev_num, q=q, category=category, sort=sort) }}">← Prev</a>
+        {% endif %}
+        <span class="page-info">Page {{ pagination.page }} of {{ pagination.pages }}</span>
+        {% if pagination.has_next %}
+          <a class="btn btn-ghost btn-sm" href="{{ url_for('games.library', page=pagination.next_num, q=q, category=category, sort=sort) }}">Next →</a>
+        {% endif %}
+      </div>
+    {% endif %}
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">🎮</div>
+      <h3>No games match your filters</h3>
+      <p>Try a different search or check back soon — new games drop every week.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

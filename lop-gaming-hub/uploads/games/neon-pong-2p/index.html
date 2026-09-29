@@ -1,0 +1,37 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Neon Pong 2P</title><style>
+body{margin:0;background:#0a0e17;display:flex;flex-direction:column;align-items:center;min-height:100vh;font-family:Verdana,sans-serif;color:#8fa3c4}
+h1{font-size:16px;letter-spacing:4px;color:#22d3ee;text-transform:uppercase;margin:14px 0 6px}
+#keys{font-size:13px;color:#5c6f93;margin-bottom:10px}
+canvas{background:#0b1f2b;border:2px solid #22d3ee;border-radius:8px;box-shadow:0 0 30px rgba(34,211,238,.22);display:block}
+</style></head><body>
+<h1>Neon Pong</h1><div id="keys">P1: W / S &nbsp;&nbsp;•&nbsp;&nbsp; P2: ↑ / ↓ &nbsp;&nbsp;•&nbsp;&nbsp; first to 5</div>
+<canvas id="c" width="720" height="420"></canvas>
+<script>
+var cv=document.getElementById('c'),ctx=cv.getContext('2d'),W=cv.width,H=cv.height;
+var pw=12,ph=80,lp={y:H/2-ph/2},rp={y:H/2-ph/2},ls=0,rs=0,ball={x:W/2,y:H/2,vx:5,vy:2.5},over=false;
+var keys={};
+document.addEventListener('keydown',function(e){keys[e.key]=true;if(e.key===' '&&over)location.reload();});
+document.addEventListener('keyup',function(e){keys[e.key]=false;});
+function reset(side){ball={x:W/2,y:H/2,vx:(side==='p2'?-1:1)*5,vy:(Math.random()*4-2)||2};}
+function frame(){if(over)return;
+ if(keys['w'])lp.y-=7;if(keys['s'])lp.y+=7;
+ if(keys['ArrowUp'])rp.y-=7;if(keys['ArrowDown'])rp.y+=7;
+ lp.y=Math.max(0,Math.min(H-ph,lp.y));rp.y=Math.max(0,Math.min(H-ph,rp.y));
+ ball.x+=ball.vx;ball.y+=ball.vy;
+ if(ball.y<0||ball.y>H){ball.vy*=-1;ball.y=Math.max(0,Math.min(H,ball.y));}
+ function hit(p){return ball.x>p.x&&ball.x<p.x+pw&&ball.y>p.y&&ball.y<p.y+ph;}
+ if(hit(lp)){ball.x=lp.x+pw;ball.vx*=-1.06;ball.vy=(ball.y-(lp.y+ph/2))/12;}
+ else if(hit(rp)){ball.x=rp.x-pw;ball.vx*=-1.06;ball.vy=(ball.y-(rp.y+ph/2))/12;}
+ if(ball.x<0){rs++;check('P2');}
+ if(ball.x>W){ls++;check('P1');}
+ ctx.fillStyle='#0b1f2b';ctx.fillRect(0,0,W,H);
+ ctx.strokeStyle='rgba(34,211,238,.35)';ctx.setLineDash([8,10]);ctx.beginPath();ctx.moveTo(W/2,0);ctx.lineTo(W/2,H);ctx.stroke();ctx.setLineDash([]);
+ ctx.fillStyle='#e8eefb';ctx.fillRect(0,lp.y,pw,ph);ctx.fillRect(W-pw,rp.y,pw,ph);
+ ctx.fillStyle='#ffd76a';ctx.beginPath();ctx.arc(ball.x,ball.y,8,0,7);ctx.fill();
+ ctx.fillStyle='#22d3ee';ctx.font='bold 22px Verdana';
+ ctx.fillText(ls, W/2-70, 34);ctx.fillText(rs, W/2+50, 34);
+ requestAnimationFrame(frame);
+ function check(w){if(ls===5||rs===5){over=true;ctx.fillStyle='rgba(10,14,23,.9)';ctx.fillRect(0,H/2-50,W,100);ctx.fillStyle='#ffd76a';ctx.font='bold 30px Verdana';ctx.textAlign='center';ctx.fillText(w+' WINS — SPACE to replay',W/2,H/2+10);ctx.textAlign='left';}else reset(w);}
+}
+requestAnimationFrame(frame);
+</script></body></html>

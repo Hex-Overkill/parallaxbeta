@@ -1,0 +1,33 @@
+<!doctype html><html><head><meta charset="utf-8"><title>TicTacToe Arena</title><style>
+body{margin:0;background:#0a0e17;display:flex;flex-direction:column;align-items:center;padding:24px;font-family:Verdana,sans-serif;color:#8fa3c4}
+h1{font-size:16px;letter-spacing:4px;color:#ef4444;text-transform:uppercase;margin:0 0 8px}
+#turn{font-size:16px;color:#e8eefb;margin-bottom:14px;min-height:22px}
+#board{display:grid;grid-template-columns:repeat(3,110px);gap:8px}
+.cell{width:110px;height:110px;background:#2b0f14;border:1px solid #8c2b2b;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:56px;font-weight:bold;cursor:pointer;user-select:none;color:#ffd76a}
+.cell.x{color:#4f7cff}.cell.o{color:#ef4444}
+#reset{margin-top:16px;padding:10px 26px;font-size:15px;background:#ef4444;border:0;border-radius:8px;cursor:pointer;color:#fff;font-weight:bold}
+</style></head><body>
+<h1>TicTacToe Arena</h1><div id="turn">X to move</div>
+<div id="board"></div><button id="reset">New round</button>
+<script>
+var cells=[],turn='X',moves=0,over=false;
+var WIN=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+var boardEl=document.getElementById('board'),turnEl=document.getElementById('turn');
+function make(){
+ cells=[];moves=0;over=false;turn='X';turnEl.textContent='X to move';
+ boardEl.innerHTML='';
+ for(var i=0;i<9;i++){var d=document.createElement('div');d.className='cell';d.dataset.i=i;
+  d.addEventListener('click',function(){if(over||this.textContent)return;
+   this.textContent=turn;this.classList.add(turn.toLowerCase());moves++;
+   var w=winner();if(w){over=true;turnEl.textContent=w+' wins! 🎉';flash(w);}
+   else if(moves===9){over=true;turnEl.textContent='Draw 🤝';}
+   else{turn=turn==='X'?'O':'X';turnEl.textContent=turn+' to move';}});
+  boardEl.appendChild(d);cells.push(d);}
+}
+function winner(){for(var i=0;i<WIN.length;i++){var a=WIN[i],x=cells[a[0]].textContent;
+ if(x&&x===cells[a[1]].textContent&&x===cells[a[2]].textContent)return x;}return null;}
+function flash(w){WIN.forEach(function(l){var ok=cells[l[0]].textContent===w&&cells[l[1]].textContent===w&&cells[l[2]].textContent===w;
+ if(ok)l.forEach(function(i){cells[i].style.borderColor='#22c55e';});});}
+document.getElementById('reset').addEventListener('click',make);
+make();
+</script></body></html>

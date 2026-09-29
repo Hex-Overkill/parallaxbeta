@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Playing {{ game.title }} — LoP Gaming Hub{% endblock %}
+{% block content %}
+<div class="play-wrap container">
+  <div class="play-bar">
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('games.detail', slug=game.slug) }}">← Back</a>
+    <div class="play-title">
+      <strong>{{ game.title }}</strong>
+      {% if game.is_premium %}<span class="badge badge-premium">PREMIUM</span>{% endif %}
+      {% if game.is_multiplayer %}<span class="badge badge-multi">MULTIPLAYER</span>{% endif %}
+    </div>
+    <div class="play-hint">Playtime is tracked automatically while this page is open.</div>
+  </div>
+  <div class="game-frame-shell">
+    <iframe id="gameFrame" class="game-frame" title="{{ game.title }}"
+            src="{{ url_for('games.files', slug=game.slug, filename=game.entry_file) }}"
+            sandbox="allow-scripts allow-pointer-lock allow-same-origin audible"
+            allow="autoplay; fullscreen" allowfullscreen></iframe>
+  </div>
+  {% if game.is_multiplayer and game.chatroom and game.chatroom.is_active %}
+  <div class="play-sidechat">
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('chat.room', room_id=game.chatroom.id) }}">💬 Open the {{ game.title }} chatroom</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/session_tracker.js') }}"
+        data-game="{{ game.slug }}"></script>
+{% endblock %}

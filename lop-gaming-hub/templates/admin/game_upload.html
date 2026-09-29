@@ -1,0 +1,70 @@
+{% extends "admin/base.html" %}
+{% block title_suffix %}Upload Game{% endblock %}
+{% block admin_content %}
+<div class="page-head">
+  <a class="btn btn-ghost btn-sm" href="{{ url_for('admin.games') }}">← All games</a>
+  <h1 class="page-title">Upload a web game</h1>
+  <p class="page-sub">ZIP your game folder and drop it here. The entry point (<code>index.html</code>) is detected automatically.</p>
+</div>
+
+<div class="card upload-card">
+  <form method="post" enctype="multipart/form-data" class="form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="title">Game title *</label>
+        <input class="form-control" type="text" id="title" name="title" required maxlength="120" placeholder="Neon Racer">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="category">Category</label>
+        <select class="form-control" id="category" name="category">
+          {% for c in categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="version">Version</label>
+        <input class="form-control" type="text" id="version" name="version" value="1.0" maxlength="30">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="description">Description</label>
+      <textarea class="form-control" id="description" name="description" rows="4" placeholder="How do you play? What makes it fun?"></textarea>
+    </div>
+
+    <div class="upload-zone">
+      <label class="form-label" for="zip_file">Game package (*.zip) *</label>
+      <input class="form-control" type="file" id="zip_file" name="zip_file" accept=".zip" required>
+      <p class="form-hint">
+        HTML + CSS + JS only &middot; max {{ max_game_size_mb }} MB unpacked &middot;
+        include a <code>thumbnail.png/jpg/webp</code> at the root to auto-set the cover.
+        ZIP bombs are rejected automatically.
+      </p>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="thumbnail">Thumbnail (optional override)</label>
+      <input class="form-control" type="file" id="thumbnail" name="thumbnail" accept=".png,.jpg,.jpeg,.webp,.svg">
+    </div>
+
+    <div class="form-checks">
+      <label class="form-check"><input type="checkbox" name="is_premium" value="1"> Premium game (token required to play)</label>
+      <label class="form-check"><input type="checkbox" name="is_multiplayer" value="1"> Multiplayer (auto-creates a chatroom for this game)</label>
+      <label class="form-check"><input type="checkbox" name="is_featured" value="1"> Feature on the homepage</label>
+    </div>
+
+    <button class="btn btn-primary btn-lg" type="submit">🚀 Publish Game</button>
+  </form>
+</div>
+
+<div class="card">
+  <h3 class="card-title">📦 How to package your game</h3>
+  <ol class="steps">
+    <li>Put all game files in one folder. The main page must be named <code>index.html</code>.</li>
+    <li>Add an optional <code>thumbnail.png</code> (or .jpg/.webp, 512×320 works best).</li>
+    <li>Right-click the folder → <strong>Compress to ZIP</strong> (Windows) and upload it here.</li>
+    <li>Your game is served inside a sandboxed iframe — keep all assets local, no external calls (they are blocked by the sandbox).</li>
+  </ol>
+</div>
+{% endblock %}

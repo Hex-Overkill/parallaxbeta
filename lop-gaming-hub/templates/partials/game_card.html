@@ -1,0 +1,36 @@
+<a class="game-card" href="{{ url_for('games.detail', slug=game.slug) }}">
+  <div class="game-thumb">
+    {% if game.thumbnail %}
+      <img
+        src="{{ url_for('games.thumb', name=game.thumbnail.replace('game-thumb/', '')) }}"
+        alt="{{ game.title }}"
+        loading="lazy"
+      >
+    {% else %}
+      <div class="thumb-fallback">
+        {{ game.title[:1]|upper }}
+      </div>
+    {% endif %}
+
+    <div class="game-badges">
+      {% if game.is_premium %}
+        <span class="badge badge-premium">PREMIUM</span>
+      {% else %}
+        <span class="badge badge-free">FREE</span>
+      {% endif %}
+
+      {% if game.is_multiplayer %}
+        <span class="badge badge-multi">MULTIPLAYER</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="game-body">
+    <h3 class="game-title">{{ game.title }}</h3>
+    <p class="game-meta">
+      {{ game.category }} &middot;
+      {{ game.play_count }} plays &middot;
+      {{ game.total_playtime|fmt_duration }}
+    </p>
+  </div>
+</a>

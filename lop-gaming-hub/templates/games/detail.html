@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}{{ game.title }} — LoP Gaming Hub{% endblock %}
+{% block content %}
+<div class="container detail-wrap">
+  <div class="card detail-hero">
+    <div class="detail-thumb">
+      {% if game.thumbnail %}
+        <img src="{{ url_for('games.thumb', name=game.thumbnail.replace('game-thumb/', '')) }}" alt="{{ game.title }}">
+      {% else %}
+        <div class="thumb-fallback thumb-fallback-lg">{{ game.title[:1]|upper }}</div>
+      {% endif %}
+    </div>
+    <div class="detail-info">
+      <div class="detail-badges">
+        {% if game.is_premium %}<span class="badge badge-premium">PREMIUM</span>{% else %}<span class="badge badge-free">FREE</span>{% endif %}
+        {% if game.is_multiplayer %}<span class="badge badge-multi">MULTIPLAYER CHAT</span>{% endif %}
+        {% if game.is_featured %}<span class="badge badge-featured">FEATURED</span>{% endif %}
+      </div>
+      <h1 class="detail-title">{{ game.title }}</h1>
+      <p class="detail-meta">{{ game.category }} &middot; v{{ game.version }} &middot; {{ game.play_count }} plays &middot; {{ game.total_playtime|fmt_duration }} played</p>
+      <p class="detail-desc">{{ game.description or 'No description provided.' }}</p>
+
+      {% if locked %}
+        <div class="lock-box">
+          <strong>🔒 This is a {{ premium_plan }} game.</strong>
+          <p>Start your free {{ trial_days }}-day trial to play it right now, or grab the yearly token for just ${{ premium_price }}.</p>
+          <a class="btn btn-gold" href="{{ url_for('premium.index') }}">Unlock with LoP Premium</a>
+        </div>
+      {% else %}
+        <div class="detail-actions">
+          <a class="btn btn-primary btn-lg" href="{{ url_for('games.play', slug=game.slug) }}">▶ Play Now</a>
+          {% if game.is_multiplayer and game.chatroom and game.chatroom.is_active %}
+            <a class="btn btn-ghost btn-lg" href="{{ url_for('chat.room', room_id=game.chatroom.id) }}">💬 Join Game Chat</a>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      {% if locked %}
+      {% elif not my_stats %}
+        <p class="form-hint detail-hint">First play will start your personal playtime stats.</p>
+      {% else %}
+        <div class="stat-inline-row">
+          <div class="stat-inline"><span class="stat-num">{{ my_stats.seconds|fmt_duration }}</span><span class="stat-label">Your time</span></div>
+          <div class="stat-inline"><span class="stat-num">{{ my_stats.plays }}</span><span class="stat-label">Your plays</span></div>
+          <div class="stat-inline"><span class="stat-num">{{ my_stats.last_played|time_ago }}</span><span class="stat-label">Last played</span></div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if top_players %}
+    <div class="card">
+      <h2 class="section-title">🏆 Top Players</h2>
+      <div class="leaderboard">
+        {% for username, secs in top_players %}
+          <div class="lb-row">
+            <span class="lb-rank">{{ loop.index }}</span>
+            <span class="avatar avatar-sm">{{ username[:1]|upper }}</span>
+            <span class="lb-name">{{ username }}</span>
+            <span class="lb-time">{{ secs or 0|fmt_duration }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

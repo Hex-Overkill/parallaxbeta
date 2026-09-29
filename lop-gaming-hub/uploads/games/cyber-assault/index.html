@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>NexusPlay: Cyber Assault</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div class="brand"><span class="n">N</span><span>NEXUS<span class="accent">PLAY</span></span></div>
+      <div class="title">CYBER ASSAULT <small>NEXUSPLAY ORIGINAL</small></div>
+      <button id="fullscreen">⛶ FULLSCREEN</button>
+    </header>
+
+    <section class="game-wrap">
+      <canvas id="game" width="1100" height="650"></canvas>
+      <div id="overlay" class="overlay hidden">
+        <h1 id="overlayTitle">GAME OVER</h1>
+        <p id="overlayText"></p>
+        <button id="restart">↻ RESTART</button>
+      </div>
+    </section>
+
+    <section class="hud">
+      <div><b>HP</b> <span id="hp">100</span>/100</div>
+      <div><b>SCORE</b> <span id="score">0</span></div>
+      <div><b>WAVE</b> <span id="wave">1</span></div>
+      <div><b>ENEMIES</b> <span id="enemies">0</span></div>
+    </section>
+
+    <section class="info">
+      <div><b>WASD</b> Move</div>
+      <div><b>MOUSE</b> Aim</div>
+      <div><b>CLICK</b> Shoot</div>
+      <div><b>SHIFT</b> Dash</div>
+      <div><b>P / ESC</b> Pause</div>
+    </section>
+  </main>
+  <script src="game.js"></script>
+</body>
+</html>

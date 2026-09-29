@@ -1,0 +1,133 @@
+{% extends "admin/base.html" %}
+{% block title_suffix %}{{ u.username }}{% endblock %}
+{% block admin_content %}
+<div class="page-head">
+  <a class="btn btn-ghost btn-sm" href="{{ url_for('admin.users') }}">← All users</a>
+  <h1 class="page-title">
+    <span class="avatar avatar-sm">{{ u.username[:1]|upper }}</span> {{ u.username }}
+    {% if u.is_admin %}<span class="pill pill-admin">ADMIN</span>{% endif %}
+    {% if u.ban_is_active %}<span class="pill pill-rejected">BANNED</span>{% endif %}
+  </h1>
+  <p class="page-sub">{{ u.email }} &middot; joined {{ u.created_at.strftime('%Y-%m-%d') }} &middot; last seen {{ u.last_seen_at|time_ago }}</p>
+</div>
+
+<div class="admin-grid-2">
+  <div class="card">
+    <h3 class="card-title">🎟️ Premium access</h3>
+    {% if premium_state == 'admin' %}
+      <p><span class="pill pill-admin">Admin — permanent access</span></p>
+    {% elif premium_state == 'active' %}
+      <p><span class="pill pill-approved">{{ premium_plan }} until {{ premium_end.strftime('%Y-%m-%d') }}</span>
+        ({{ (premium_end - now_utc()).days }} days left)</p>
+    {% elif premium_state == 'trial' %}
+      <p><span class="pill pill-pending">Trial until {{ premium_end.strftime('%Y-%m-%d') }}</span></p>
+    {% elif premium_state == 'expired' %}
+      <p><span class="pill pill-rejected">Expired {{ premium_end.strftime('%Y-%m-%d') }}</span></p>
+    {% else %}
+      <p>No premium history.</p>
+    {% endif %}
+    <form method="post" action="{{ url_for('admin.user_grant', user_id=u.id) }}" class="form-row">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input class="form-control grant-days" type="number" name="days" value="365" min="1" max="3650">
+      <button class="btn btn-primary" type="submit">Grant days</button>
+    </form>
+    <p class="form-hint">Use to correct access or approve offline payments.</p>
+  </div>
+
+  <div class="card">
+    <h3 class="card-title">🚫 Ban management</h3>
+    {% if u.is_admin %}
+      <p class="form-hint">Administrators cannot be banned.</p>
+    {% elif u.ban_is_active %}
+      <div class="ban-box">
+        <p><strong>Reason:</strong> {{ u.ban_reason }}</p>
+        <p>{{ 'Permanent ban since ' + u.banned_at.strftime('%Y-%m-%d') if u.banned_until is none else 'Suspended until ' + u.banned_until.strftime('%Y-%m-%d') }}</p>
+      </div>
+      <form method="post" action="{{ url_for('admin.user_unban', user_id=u.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-danger" type="submit">Revoke ban / unban</button>
+      </form>
+    {% else %}
+      <form method="post" action="{{ url_for('admin.user_ban', user_id=u.id) }}" class="form" id="banForm">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="form-group">
+          <label class="form-label" for="reason">Ban reason (shown to the user)</label>
+          <input class="form-control" type="text" id="reason" name="reason" placeholder="Spam / abuse / chargeback…">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="days">Duration in days (empty = permanent)</label>
+          <input class="form-control" type="number" id="days" name="days" min="1" max="3650" placeholder="permanent">
+        </div>
+        <button class="btn btn-danger" type="submit" data-confirm="Ban {{ u.username }}? They will lose access immediately.">Ban account</button>
+      </form>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <h3 class="card-title">📊 Activity by game</h3>
+  {% if activity %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead><tr><th>Game</th><th>Plays</th><th>Time</th><th>Last played</th></tr></thead>
+        <tbody>
+          {% for s in activity %}
+            <tr>
+              <td>{{ s.title }}{% if s.is_premium %} <span class="badge badge-premium">PREMIUM</span>{% endif %}</td>
+              <td>{{ s.plays }}</td>
+              <td>{{ s.seconds|fmt_duration }}</td>
+              <td>{{ s.last_played|time_ago }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}<p class="empty-state">No playtime yet.</p>{% endif %}
+</div>
+
+<div class="admin-grid-2">
+  <div class="card">
+    <h3 class="card-title">🕒 Recent play sessions ({{ recent_sessions|length }} shown)</h3>
+    {% if recent_sessions %}
+      <div class="table-wrap">
+        <table class="table table-sm">
+          <thead><tr><th>Game</th><th>Started</th><th>Duration</th><th>Status</th></tr></thead>
+          <tbody>
+            {% for s in recent_sessions %}
+              <tr>
+                <td>{{ s.game.title }}</td>
+                <td>{{ s.started_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>{{ s.duration_seconds|fmt_duration }}</td>
+                <td>{% if s.is_active %}<span class="pill pill-pending">LIVE</span>{% else %}ended{% endif %}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}<p class="empty-state">No sessions yet.</p>{% endif %}
+  </div>
+
+  <div class="card">
+    <h3 class="card-title">💬 Chat messages: {{ chat_count }} &middot; 🧾 Payments: {{ payments|length }}</h3>
+    {% if payments %}
+      <div class="table-wrap">
+        <table class="table table-sm">
+          <thead><tr><th>#</th><th>Date</th><th>Amount</th><th>Status</th></tr></thead>
+          <tbody>
+            {% for p in payments %}
+              <tr>
+                <td>#{{ p.id }}</td>
+                <td>{{ p.created_at.strftime('%Y-%m-%d') }}</td>
+                <td>${{ '%.2f'|format(p.amount) }}</td>
+                <td>{% if p.status == 'pending' %}<span class="pill pill-pending">Pending</span>
+                    {% elif p.status == 'approved' %}<span class="pill pill-approved">Approved</span>
+                    {% else %}<span class="pill pill-rejected">Rejected</span>{% endif %}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}<p class="empty-state">No payment requests.</p>{% endif %}
+  </div>
+</div>
+{% endblock %}

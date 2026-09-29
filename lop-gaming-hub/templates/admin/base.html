@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Admin · {{ self.title_suffix() }}{% endblock %}
+{% block content %}
+<div class="admin-layout">
+  <aside class="sidebar">
+    <p class="sidebar-label">CONTROL PANEL</p>
+    <a class="sidebar-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}" href="{{ url_for('admin.dashboard') }}">📊 Dashboard</a>
+    <a class="sidebar-link {% if request.endpoint in ('admin.users', 'admin.user_detail') %}active{% endif %}" href="{{ url_for('admin.users') }}">👥 Users</a>
+    <a class="sidebar-link {% if request.endpoint in ('admin.games', 'admin.game_upload') %}active{% endif %}" href="{{ url_for('admin.games') }}">🎮 Games</a>
+    <a class="sidebar-link {% if request.endpoint == 'admin.payments' %}active{% endif %}" href="{{ url_for('admin.payments') }}">💳 Payments
+      {% set pending_count = counts.get('pending', 0) if counts is defined else 0 %}
+      {% if pending_count %}<span class="pill pill-pending">{{ pending_count }}</span>{% endif %}
+    </a>
+    <p class="sidebar-label">SITE</p>
+    <a class="sidebar-link" href="{{ url_for('main.index') }}">← Back to site</a>
+  </aside>
+  <div class="admin-main">
+    {% block admin_content %}{% endblock %}
+  </div>
+</div>
+{% endblock %}

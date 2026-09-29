@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}LoP Gaming Hub — Play Free Web Games{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="container hero-inner">
+    <p class="hero-eyebrow">/// THE PLAYGROUND IS OPEN</p>
+    <h1 class="hero-title">PLAY.<br><span class="grad-text">LEVEL UP.</span></h1>
+    <p class="hero-sub">
+      {{ stats.games }}+ games. Multiplayer chatrooms. New drops every week.
+      Every account starts with a <strong>{{ trial_days }}-day {{ premium_plan }} trial</strong>.
+    </p>
+    <div class="hero-actions">
+      {% if current_user.is_authenticated %}
+        <a class="btn btn-primary btn-lg" href="{{ url_for('games.library') }}">Browse the Library</a>
+        <a class="btn btn-ghost btn-lg" href="{{ url_for('chat.hub') }}">Join the Lobby Chat</a>
+      {% else %}
+        <a class="btn btn-primary btn-lg" href="{{ url_for('auth.register') }}">Create Free Account</a>
+        <a class="btn btn-ghost btn-lg" href="{{ url_for('auth.login') }}">I already have an account</a>
+      {% endif %}
+    </div>
+    <div class="stats-row">
+      <div class="stat-card"><span class="stat-num">{{ stats.games }}</span><span class="stat-label">Games in Library</span></div>
+      <div class="stat-card"><span class="stat-num">{{ stats.plays }}</span><span class="stat-label">Total Plays</span></div>
+      <div class="stat-card"><span class="stat-num">{{ stats.hours }}</span><span class="stat-label">Time Played</span></div>
+      <div class="stat-card"><span class="stat-num">{{ stats.users }}</span><span class="stat-label">Players Registered</span></div>
+      <div class="stat-card"><span class="stat-num">{{ stats.online }}</span><span class="stat-label">Online Right Now</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <h2 class="section-title">🔥 Featured Games</h2>
+      <a class="section-more" href="{{ url_for('games.library') }}">View all games →</a>
+    </div>
+    <div class="game-grid">
+      {% for game in featured %}
+        {% include "partials/game_card.html" %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt">
+  <div class="container">
+    <div class="section-head">
+      <h2 class="section-title">🕹️ Newest Drops</h2>
+      <a class="section-more" href="{{ url_for('games.library') }}">View all games →</a>
+    </div>
+    <div class="game-grid">
+      {% for game in latest %}
+        {% include "partials/game_card.html" %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{% if recent_sessions %}
+<section class="section">
+  <div class="container">
+    <h2 class="section-title">👀 Live Activity</h2>
+    <ul class="activity-list">
+      {% for session, username, title, slug in recent_sessions %}
+        <li class="activity-item">
+          <span class="avatar avatar-sm">{{ username[:1]|upper }}</span>
+          <span><strong>{{ username }}</strong> is playing
+            <a href="{{ url_for('games.detail', slug=slug) }}">{{ title }}</a>
+          </span>
+          <span class="activity-time">{{ session.started_at|time_ago }}</span>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+{% endif %}
+
+<section class="section cta-band">
+  <div class="container cta-inner">
+    <div>
+      <h2>Go {{ premium_plan }} and unlock the full library.</h2>
+      <p>${{ premium_price }}/year &middot; yearly token &middot; verified by our team via PayPal</p>
+    </div>
+    <a class="btn btn-gold" href="{{ url_for('premium.index') }}">Learn More</a>
+  </div>
+</section>
+{% endblock %}

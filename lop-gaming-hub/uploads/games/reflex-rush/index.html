@@ -1,0 +1,27 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Reflex Rush</title><style>
+body{margin:0;background:#0a0e17;display:flex;flex-direction:column;align-items:center;padding:20px;font-family:Verdana,sans-serif;color:#8fa3c4}
+h1{font-size:16px;letter-spacing:4px;color:#f5b83d;text-transform:uppercase;margin:0 0 8px}
+#hud{display:flex;gap:28px;font-size:15px;color:#e8eefb;margin-bottom:10px}
+#hud b{color:#f5b83d}
+canvas{background:#2b1a06;border:2px solid #f5b83d;border-radius:8px;box-shadow:0 0 30px rgba(245,184,61,.2);cursor:crosshair}
+</style></head><body>
+<h1>Reflex Rush</h1><div id="hud"><span>Score <b id="sc">0</b></span><span>Time <b id="tm">30.0</b></span><span>Best <b id="hi">0</b></span></div>
+<canvas id="c" width="600" height="400"></canvas>
+<script>
+var cv=document.getElementById('c'),ctx=cv.getContext('2d'),T=30,W=cv.width,H=cv.height;
+var score=0,best=+(localStorage?localStorage.getItem('rr_best')||0:0),time=T,active=[],started=false;
+document.getElementById('hi').textContent=best;
+function spawn(){var x=40+Math.random()*(W-80),y=40+Math.random()*(H-80);
+ active.push({x:x,y:y,r:26,born:performance.now()});}
+cv.addEventListener('mousedown',function(e){var r=cv.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;
+ for(var i=active.length-1;i>=0;i--){var n=active[i];
+  if(Math.hypot(mx-n.x,my-n.y)<n.r+8){score++;active.splice(i,1);document.getElementById('sc').textContent=score;return;}}});
+setInterval(function(){if(!started){started=true;spawn();spawn();
+ setInterval(function(){if(active.length<3)spawn();},900);return;}
+ time=Math.max(0,time-.1);document.getElementById('tm').textContent=time.toFixed(1);
+ if(time<=0){if(score>best){best=score;localStorage.setItem('rr_best',best);document.getElementById('hi').textContent=best;}
+  ctx.fillStyle='rgba(10,14,23,.92)';ctx.fillRect(0,H/2-45,W,90);ctx.fillStyle='#ffd76a';ctx.font='bold 28px Verdana';ctx.textAlign='center';ctx.fillText('SCORE: '+score,W/2,H/2+10);ctx.textAlign='left';return;}
+ active=active.filter(function(n){return performance.now()-n.born<800;});
+ ctx.fillStyle='#2b1a06';ctx.fillRect(0,0,W,H);
+ active.forEach(function(n){var a=1-(performance.now()-n.born)/800;ctx.globalAlpha=Math.max(0,a);ctx.fillStyle='#f5b83d';ctx.beginPath();ctx.arc(n.x,n.y,n.r,0,7);ctx.fill();ctx.fillStyle='#2b1a06';ctx.beginPath();ctx.arc(n.x,n.y,n.r*.55,0,7);ctx.fill();ctx.globalAlpha=1;});},100);
+</script></body></html>

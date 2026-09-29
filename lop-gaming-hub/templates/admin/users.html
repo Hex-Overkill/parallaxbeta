@@ -1,0 +1,62 @@
+{% extends "admin/base.html" %}
+{% block title_suffix %}Users{% endblock %}
+{% block admin_content %}
+<div class="page-head">
+  <h1 class="page-title">Users</h1>
+  <p class="page-sub">Manage accounts, premium access and bans.</p>
+</div>
+
+<form class="filter-bar" method="get">
+  <input class="form-control search-input" type="search" name="q" value="{{ q }}" placeholder="Search username or email…">
+  <select class="form-control filter-select" name="status">
+    <option value="">All statuses</option>
+    <option value="trial" {% if status == 'trial' %}selected{% endif %}>On trial</option>
+    <option value="premium" {% if status == 'premium' %}selected{% endif %}>Premium active</option>
+    <option value="banned" {% if status == 'banned' %}selected{% endif %}>Banned</option>
+  </select>
+  <button class="btn btn-primary" type="submit">Filter</button>
+</form>
+
+<div class="card">
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th>User</th><th>Email</th><th>Joined</th><th>Last seen</th><th>Premium</th><th>Playtime</th><th>Sessions</th><th>Status</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+          {% set u = row.user %}
+          <tr class="{% if u.is_banned %}row-banned{% endif %}">
+            <td>
+              <span class="avatar avatar-sm">{{ u.username[:1]|upper }}</span>
+              <strong>{{ u.username }}</strong>{% if u.is_admin %} <span class="pill pill-admin">ADMIN</span>{% endif %}
+            </td>
+            <td>{{ u.email }}</td>
+            <td>{{ u.created_at.strftime('%Y-%m-%d') }}</td>
+            <td>{{ u.last_seen_at|time_ago }}</td>
+            <td>
+              {% if row.premium_state == 'active' %}<span class="pill pill-approved">until {{ row.premium_end.strftime('%Y-%m-%d') }}</span>
+              {% elif row.premium_state == 'trial' %}<span class="pill pill-pending">trial</span>
+              {% elif row.premium_state == 'expired' %}<span class="pill pill-rejected">expired</span>
+              {% else %}—{% endif %}
+            </td>
+            <td>{{ row.playtime|fmt_duration }}</td>
+            <td>{{ row.sessions }}</td>
+            <td>{% if u.is_banned %}<span class="pill pill-rejected">BANNED</span>{% else %}<span class="pill pill-approved">OK</span>{% endif %}</td>
+            <td><a class="btn btn-ghost btn-sm" href="{{ url_for('admin.user_detail', user_id=u.id) }}">Manage</a></td>
+          </tr>
+        {% else %}
+          <tr><td colspan="9" class="empty-state">No users found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if pagination.pages > 1 %}
+    <div class="pagination">
+      {% if pagination.has_prev %}<a class="btn btn-ghost btn-sm" href="{{ url_for('admin.users', page=pagination.prev_num, q=q, status=status) }}">← Prev</a>{% endif %}
+      <span class="page-info">Page {{ pagination.page }} of {{ pagination.pages }}</span>
+      {% if pagination.has_next %}<a class="btn btn-ghost btn-sm" href="{{ url_for('admin.users', page=pagination.next_num, q=q, status=status) }}">Next →</a>{% endif %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

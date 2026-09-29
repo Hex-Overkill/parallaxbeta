@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}500 — Server Error{% endblock %}
+{% block content %}
+<div class="container error-page">
+  <div class="error-code">500</div>
+  <h1>Lag spike</h1>
+  <p>Something broke on our side. The tech crew has been notified — try again in a moment.</p>
+  <div class="hero-actions">
+    <a class="btn btn-primary" href="{{ url_for('main.index') }}">Back home</a>
+    <a class="btn btn-ghost" href="{{ url_for('games.library') }}">Game library</a>
+  </div>
+</div>
+{% endblock %}

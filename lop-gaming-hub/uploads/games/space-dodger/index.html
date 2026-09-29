@@ -1,0 +1,32 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Space Dodger</title><style>
+body{margin:0;background:#0a0e17;display:flex;flex-direction:column;align-items:center;padding:20px;font-family:Verdana,sans-serif;color:#8fa3c4}
+h1{font-size:16px;letter-spacing:4px;color:#4f7cff;text-transform:uppercase;margin:0 0 8px}
+#hud{display:flex;gap:26px;font-size:15px;color:#e8eefb;margin-bottom:10px}
+#hud b{color:#4f7cff}
+canvas{background:#0a1026;border:2px solid #4f7cff;border-radius:8px;box-shadow:0 0 30px rgba(79,124,255,.18)}
+</style></head><body>
+<h1>Space Dodger</h1><div id="hud"><span>Score <b id="sc">0</b></span><span>Survival <b id="tm">0s</b></span><span>Keys: ← ↑ ↓ →</span></div>
+<canvas id="c" width="640" height="440"></canvas>
+<script>
+var cv=document.getElementById('c'),ctx=cv.getContext('2d'),W=cv.width,H=cv.height;
+var ship={x:W/2,y:H-60,w:42,h:26},ast=[],score=0,alive=true,start=performance.now(),keys={};
+function star(){return{x:Math.random()*W,y:-30,r:6+Math.random()*16,v:2.6+Math.random()*3.6};}
+document.addEventListener('keydown',function(e){keys[e.key]=true;if(e.key===' '&&!alive)location.reload();});
+document.addEventListener('keyup',function(e){keys[e.key]=false;});
+setInterval(function(){ast.push(star());if(Math.random()<.4)ast.push(star());},600);
+function frame(now){if(!alive)return;
+ if(keys['ArrowLeft'])ship.x-=6;if(keys['ArrowRight'])ship.x+=6;
+ if(keys['ArrowUp'])ship.y-=5;if(keys['ArrowDown'])ship.y+=5;
+ ship.x=Math.max(15,Math.min(W-15,ship.x));ship.y=Math.max(15,Math.min(H-15,ship.y));
+ ctx.fillStyle='#0a1026';ctx.fillRect(0,0,W,H);
+ ast.forEach(function(a){a.y+=a.v;a.x+=Math.sin((now+a.y)/900)*.6;
+  ctx.fillStyle='#4f5a74';ctx.beginPath();ctx.arc(a.x,a.y,a.r,0,7);ctx.fill();
+  ctx.fillStyle='#1c2840';ctx.beginPath();ctx.arc(a.x-a.r*.2,a.y-a.r*.2,a.r*.5,0,7);ctx.fill();
+  if(Math.abs(a.x-ship.x)<a.r+ship.w/2&&Math.abs(a.y-ship.y)<a.r+ship.h/2){alive=false;ctx.fillStyle='rgba(10,14,23,.92)';ctx.fillRect(0,H/2-45,W,90);ctx.fillStyle='#ffd76a';ctx.font='bold 26px Verdana';ctx.textAlign='center';ctx.fillText('CRASHED! SPACE to replay',W/2,H/2+10);ctx.textAlign='left';return;}});
+ ast=ast.filter(function(a){return a.y<H+40;});
+ ctx.fillStyle='#ffd76a';ctx.beginPath();ctx.moveTo(ship.x,ship.y-ship.h/2);ctx.lineTo(ship.x+ship.w/2,ship.y+ship.h/2);ctx.lineTo(ship.x-ship.w/2,ship.y+ship.h/2);ctx.closePath();ctx.fill();
+ score++;document.getElementById('sc').textContent=Math.floor(score/4);
+ document.getElementById('tm').textContent=Math.floor((now-start)/1000)+'s';
+ requestAnimationFrame(frame);}
+requestAnimationFrame(frame);
+</script></body></html>

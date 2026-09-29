@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}413 — Too Large{% endblock %}
+{% block content %}
+<div class="container error-page">
+  <div class="error-code">413</div>
+  <h1>Too large</h1>
+  <p>The file you tried to upload exceeds the allowed limit. Check the ZIP size and try again.</p>
+  <a class="btn btn-primary" href="{{ url_for('admin.game_upload') }}">Back to upload</a>
+</div>
+{% endblock %}
